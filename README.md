@@ -1,2 +1,0 @@
-# HLTV-Manager
-HLTV Manager
