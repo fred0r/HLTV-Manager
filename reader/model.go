@@ -1,0 +1,12 @@
+package reader
+
+type Config struct {
+	HLTV []HLTV `yaml:"HLTV"`
+}
+
+type HLTV struct {
+	Name     string `yaml:"Name"`
+	Connect  string `yaml:"Connect"`
+	HltvPort string `yaml:"HltvPort"`
+	DemoName string `yaml:"DemoName"`
+}
