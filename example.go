@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"path/filepath"
 
 	"os"
 
-	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/mount"
 	"github.com/docker/docker/client"
@@ -34,11 +34,15 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	demoPath, err := os.Getwd()
+	path, err := os.Getwd()
 	if err != nil {
 		log.Println("Getwd error:", err)
 		return
 	}
+
+	demoPath := filepath.Join(path, testHLTV.Name, "cstrike")
+
+	os.MkdirAll(demoPath, 0755)
 
 	// Создание контейнера
 	resp, err := cli.ContainerCreate(ctx, &container.Config{
@@ -53,8 +57,8 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
 		Mounts: []mount.Mount{
 			{
 				Type:   mount.TypeBind,
-				Source: demoPath + "/demos",
-				Target: "/demos",
+				Source: demoPath,
+				Target: "/home/hltv/cstrike",
 			},
 		},
 		AutoRemove: true,
@@ -65,7 +69,7 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Подключаемся к stdin/stdout контейнера
-	attach, err := cli.ContainerAttach(ctx, resp.ID, types.ContainerAttachOptions{
+	attach, err := cli.ContainerAttach(ctx, resp.ID, container.AttachOptions{
 		Stream: true,
 		Stdin:  true,
 		Stdout: true,
@@ -78,7 +82,7 @@ func wsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer attach.Close()
 
-	err = cli.ContainerStart(ctx, resp.ID, types.ContainerStartOptions{})
+	err = cli.ContainerStart(ctx, resp.ID, container.StartOptions{})
 	if err != nil {
 		log.Println("Start error:", err)
 		return

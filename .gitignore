@@ -16,7 +16,6 @@ go.sum
 
 .vscode/launch.json
 
-/backend
-/old
+./HLTV-Manager
 
-/kreedz-web-stats
+/HltvTest
