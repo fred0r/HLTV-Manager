@@ -9,7 +9,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-func GetHLTV(filePath string) ([]HLTV, error) {
+func ReadHLTVRunners(filePath string) ([]HLTV, error) {
 	file, err := os.OpenFile(filePath, os.O_RDONLY, os.FileMode(0644))
 	if err != nil {
 		if !os.IsNotExist(err) {

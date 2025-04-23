@@ -1,6 +1,7 @@
 package main
 
 import (
+	"HLTV-Manager/reader"
 	"context"
 	"fmt"
 	"log"
@@ -14,6 +15,8 @@ import (
 	"github.com/docker/docker/client"
 	"github.com/gorilla/websocket"
 )
+
+var testHLTV reader.HLTV
 
 var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool { return true },
