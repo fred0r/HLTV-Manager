@@ -20,26 +20,33 @@ func main() {
 
 	read, err := reader.ReadHLTVRunners("hltv-runners.yaml")
 	if err != nil {
-		log.WarningLogger.Printf("Обшика в чтении данных конфига hltv: %v", err)
+		log.ErrorLogger.Printf("Обшика в чтении данных конфига hltv: %v", err)
 		return
 	}
 
 	log.InfoLogger.Println(read)
 
-	hltv := &hltv.HLTV{
-		ID: 1,
-		Config: hltv.Config{
-			Connect:  read[0].Connect,
-			HltvPort: read[0].HltvPort,
-			DemoFile: read[0].Name,
-			DemoName: read[0].DemoName,
-		},
+	hltvConfig := hltv.Config{
+		Connect:  read[0].Connect,
+		HltvPort: read[0].HltvPort,
+		DemoFile: read[0].Name,
+		DemoName: read[0].DemoName,
+	}
+
+	hltv, err := hltv.NewHLTV(1, hltvConfig)
+	if err != nil {
+		log.ErrorLogger.Printf("Ошибка при создании HLTV: %v", err)
+		return
+	}
+
+	err = hltv.Start()
+	if err != nil {
+		log.ErrorLogger.Printf("Ошибка запуске HLTV: %v", err)
+		return
 	}
 
 	shutDown := make(chan os.Signal, 1)
 	signal.Notify(shutDown, syscall.SIGINT, syscall.SIGTERM)
-
-	hltv.Start()
 
 	go func() {
 		<-shutDown
