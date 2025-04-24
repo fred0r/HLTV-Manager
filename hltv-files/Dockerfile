@@ -30,4 +30,4 @@ VOLUME ["/home/hltv/cstrike"]
 ENV LD_LIBRARY_PATH=./
 
 ENTRYPOINT ["./hltv"]
-CMD ["+connect", "127.0.0.1:27015", "+record", "test", "-port", "1337", "+record", "demoname", "+exec", "hltv.cfg"]
+CMD ["+connect", "127.0.0.1:27015", "-port", "1337", "+record", "demoname", "+exec", "hltv.cfg"]

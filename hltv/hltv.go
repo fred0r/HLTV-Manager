@@ -48,6 +48,12 @@ func (h *HLTV) Start() error {
 
 	os.MkdirAll(demoPath, 0755)
 
+	err = os.Chown(demoPath, 1000, 1000)
+	if err != nil {
+		log.Println("Chown error:", err)
+		return err
+	}
+
 	cmd := []string{
 		"+connect", h.Config.Connect,
 		"-port", h.Config.HltvPort,
