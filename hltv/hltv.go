@@ -52,7 +52,7 @@ func (h *HLTV) Start() error {
 		return err
 	}
 
-	demoPath := filepath.Join(path, h.Config.DemoFile, "cstrike")
+	demoPath := filepath.Join(path, "demos", strconv.FormatInt(h.ID, 10), "cstrike")
 
 	err = os.MkdirAll(demoPath, 0755)
 	if err != nil {
@@ -84,7 +84,7 @@ func (h *HLTV) Start() error {
 		log.ErrorLogger.Printf("Обшика при запуске контейнера hltv (%d): %v", h.ID, err)
 		return err
 	}
-	go func() {
+	go func() { // READER CONTAINER TODO: Вынести отдельно и использовать по надобности
 		buf := make([]byte, 1024)
 		for {
 			n, err := h.Attach.Reader.Read(buf)
