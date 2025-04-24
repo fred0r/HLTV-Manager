@@ -16,6 +16,6 @@ go.sum
 
 .vscode/launch.json
 
-./HLTV-Manager
+/HLTV-Manager
 
 /HltvTest

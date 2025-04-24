@@ -1,7 +1,6 @@
 package hltv
 
 import (
-	"bufio"
 	"context"
 	"fmt"
 	"log"
@@ -116,47 +115,23 @@ func (h *HLTV) Start(shutDown chan os.Signal) error {
 		}
 	}()
 
-	// go func() {
-	// 	<-shutDown
-	// 	err = h.WriteCommand("quit")
-	// 	if err != nil {
-	// 		fmt.Println("Write to container error:", err)
-	// 		return
-	// 	}
-	// 	time.Sleep(5 * time.Second) // TODO: Костыль
-	// 	h.Attach.Close()
-	// 	fmt.Println("Программа завершена.")
-	// 	os.Exit(0)
-	// }()
-
-	go func() {
-		for {
-			in := bufio.NewReader(os.Stdin)
-			line, err := in.ReadString('\n')
-			if err != nil {
-				fmt.Println("ERR")
-				continue
-			}
-
-			err = h.WriteCommand(line)
-			if err != nil {
-				fmt.Println("Write to container error:", err)
-				break
-			}
-		}
-	}()
-
 	return nil
 }
 
-// func (h *HLTV) Quit() error {
-// 	_, err := h.Attach.Conn.Write([]byte("quit"))
-// 	if err != nil {
-// 		return err
-// 	}
+func (h *HLTV) Quit() error {
+	err := h.WriteCommand("quit")
+	if err != nil {
+		return err
+	}
 
-// 	return nil
-// }
+	if closer, ok := h.Attach.Conn.(interface{ CloseWrite() error }); ok {
+		_ = closer.CloseWrite()
+	}
+
+	h.Attach.Close()
+
+	return nil
+}
 
 func (h *HLTV) GetLog() []string {
 	h.mu.Lock()
@@ -165,6 +140,6 @@ func (h *HLTV) GetLog() []string {
 }
 
 func (h *HLTV) WriteCommand(cmd string) error {
-	_, err := h.Attach.Conn.Write([]byte(cmd))
+	_, err := h.Attach.Conn.Write([]byte(cmd + "\n"))
 	return err
 }

@@ -4,6 +4,7 @@ import (
 	"HLTV-Manager/hltv"
 	log "HLTV-Manager/logger"
 	"HLTV-Manager/reader"
+	"bufio"
 	"fmt"
 	"os"
 	"os/signal"
@@ -38,7 +39,32 @@ func main() {
 	shutDown := make(chan os.Signal, 1)
 	signal.Notify(shutDown, syscall.SIGINT, syscall.SIGTERM)
 
-	go hltv.Start(shutDown)
+	hltv.Start(shutDown)
+
+	go func() {
+		<-shutDown
+
+		hltv.Quit()
+
+		fmt.Println("Программа завершена.")
+
+		os.Exit(0)
+	}()
+
+	for {
+		in := bufio.NewReader(os.Stdin)
+		line, err := in.ReadString('\n')
+		if err != nil {
+			fmt.Println("ERR")
+			continue
+		}
+
+		err = hltv.WriteCommand(line)
+		if err != nil {
+			fmt.Println("Write to container error:", err)
+			break
+		}
+	}
 
 	select {}
 }
