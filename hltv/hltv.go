@@ -31,7 +31,7 @@ type Config struct {
 	DemoName string
 }
 
-func (h *HLTV) Start(shutDown chan os.Signal) error {
+func (h *HLTV) Start() error {
 	ctx := context.Background()
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {

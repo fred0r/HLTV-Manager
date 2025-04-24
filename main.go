@@ -39,7 +39,7 @@ func main() {
 	shutDown := make(chan os.Signal, 1)
 	signal.Notify(shutDown, syscall.SIGINT, syscall.SIGTERM)
 
-	hltv.Start(shutDown)
+	hltv.Start()
 
 	go func() {
 		<-shutDown
