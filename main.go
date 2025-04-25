@@ -31,6 +31,7 @@ func main() {
 		Connect:  read[0].Connect,
 		Port:     read[0].Port,
 		DemoName: read[0].DemoName,
+		Config:   read[0].Config,
 	}
 
 	hltv, err := hltv.NewHLTV(1, hltvConfig)

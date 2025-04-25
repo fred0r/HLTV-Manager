@@ -10,11 +10,10 @@ import (
 )
 
 type ContainerConfig struct {
-	Image     string
-	Cmd       []string
-	MountHost string
-	MountCont string
-	Name      string
+	Image  string
+	Cmd    []string
+	Mounts []mount.Mount
+	Name   string
 }
 
 type DockerContainerManager struct {
@@ -41,13 +40,7 @@ func (m *DockerContainerManager) CreateAndStart(config ContainerConfig) (types.H
 		AttachStdout: true,
 		AttachStderr: true,
 	}, &container.HostConfig{
-		Mounts: []mount.Mount{
-			{
-				Type:   mount.TypeBind,
-				Source: config.MountHost,
-				Target: config.MountCont,
-			},
-		},
+		Mounts:     config.Mounts,
 		AutoRemove: true,
 	}, nil, nil, config.Name)
 	if err != nil {

@@ -3,3 +3,18 @@ HLTV:
     Connect: 85.192.30.229:27015
     HltvPort: 28015
     DemoName: server
+    Config:
+      - hostname "HLTV | TEST"
+      - name "HLTV-Manager"
+      - maxclients "0"
+      - nomaster "1"
+      - publicgame "0"
+      - autoretry "1"
+      - rate "100000"
+      - updaterate "40"
+      - maxrate "10000"
+      - delay "0"
+      - blockvoice "0"
+      - signoncommands "voice_scale 2; voice_overdrive 16; volume 0.5"
+      - chatmode "0"
+      - logfile "0"

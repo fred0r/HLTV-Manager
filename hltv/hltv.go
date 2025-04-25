@@ -5,11 +5,11 @@ import (
 	log "HLTV-Manager/logger"
 	"fmt"
 	"os"
-	"path/filepath"
 	"strconv"
 	"sync"
 
 	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/mount"
 )
 
 const maxLogLines = 100
@@ -29,6 +29,7 @@ type Settings struct {
 	Connect  string
 	Port     string
 	DemoName string
+	Config   []string
 }
 
 func NewHLTV(id int64, settings Settings) (*HLTV, error) {
@@ -52,17 +53,13 @@ func (hltv *HLTV) Start() error {
 		return err
 	}
 
-	demoPath := filepath.Join(path, "demos", strconv.FormatInt(hltv.ID, 10), "cstrike")
-
-	err = os.MkdirAll(demoPath, 0755)
+	demoPath, err := createDemosDir(path, hltv.ID)
 	if err != nil {
-		log.ErrorLogger.Printf("Обшика при создании директории для демок hltv (%d): %v", hltv.ID, err)
 		return err
 	}
 
-	err = os.Chown(demoPath, 1000, 1000)
+	cfgPath, err := createHltvCfg(path, hltv.ID, hltv.Settings.Config)
 	if err != nil {
-		log.ErrorLogger.Printf("Обшика при выдаче прав директории для демок hltv (%d): %v", hltv.ID, err)
 		return err
 	}
 
@@ -73,11 +70,21 @@ func (hltv *HLTV) Start() error {
 	}
 
 	hltv.Attach, hltv.ContID, err = hltv.Container.CreateAndStart(docker.ContainerConfig{
-		Image:     "my-hltv",
-		Cmd:       cmd,
-		MountHost: demoPath,
-		MountCont: "/home/hltv/cstrike",
-		Name:      "hltv_" + strconv.FormatInt(hltv.ID, 10),
+		Image: "ghcr.io/wesstorn/hltv-files:v1.0",
+		Cmd:   cmd,
+		Mounts: []mount.Mount{
+			{
+				Type:   mount.TypeBind,
+				Source: cfgPath,
+				Target: "/home/hltv/hltv.cfg",
+			},
+			{
+				Type:   mount.TypeBind,
+				Source: demoPath,
+				Target: "/home/hltv/cstrike",
+			},
+		},
+		Name: "hltv_" + strconv.FormatInt(hltv.ID, 10),
 	})
 
 	if err != nil {

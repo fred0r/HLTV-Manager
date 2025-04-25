@@ -16,7 +16,6 @@ COPY libsteam_api.so .
 COPY core.so .
 COPY steamclient.so .
 COPY libsteam.so .steam/sdk32/
-COPY hltv.cfg .
 
 RUN mkdir -p /home/hltv/cstrike
 
