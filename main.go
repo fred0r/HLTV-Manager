@@ -26,10 +26,10 @@ func main() {
 
 	log.InfoLogger.Println(read)
 
-	hltvConfig := hltv.Config{
+	hltvConfig := hltv.Settings{
+		Name:     read[0].Name,
 		Connect:  read[0].Connect,
-		HltvPort: read[0].HltvPort,
-		DemoFile: read[0].Name,
+		Port:     read[0].Port,
 		DemoName: read[0].DemoName,
 	}
 

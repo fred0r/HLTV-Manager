@@ -7,6 +7,6 @@ type Config struct {
 type HLTV struct {
 	Name     string `yaml:"Name"`
 	Connect  string `yaml:"Connect"`
-	HltvPort string `yaml:"HltvPort"`
+	Port     string `yaml:"HltvPort"`
 	DemoName string `yaml:"DemoName"`
 }
