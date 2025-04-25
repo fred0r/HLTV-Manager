@@ -55,14 +55,12 @@ func (hltv *HLTV) Start() error {
 		return err
 	}
 
-	cmd := []string{
-		"+connect", hltv.Settings.Connect,
-		"-port", hltv.Settings.Port,
-		"+record", hltv.Settings.DemoName,
-	}
-
 	err = hltv.Docker.CreateAndStart(docker.HltvContainerConfig{
-		Cmd:      cmd,
+		Cmd: []string{
+			"+connect", hltv.Settings.Connect,
+			"-port", hltv.Settings.Port,
+			"+record", hltv.Settings.DemoName,
+		},
 		DemoPath: demoPath,
 		CfgPath:  cfgPath,
 		HltvID:   hltv.ID,
