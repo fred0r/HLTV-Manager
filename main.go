@@ -46,6 +46,8 @@ func main() {
 		return
 	}
 
+	go hltv.ShowTerminal()
+
 	shutDown := make(chan os.Signal, 1)
 	signal.Notify(shutDown, syscall.SIGINT, syscall.SIGTERM)
 

@@ -2,6 +2,7 @@ package docker
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
@@ -9,30 +10,32 @@ import (
 	"github.com/docker/docker/client"
 )
 
-type ContainerConfig struct {
-	Image  string
-	Cmd    []string
-	Mounts []mount.Mount
-	Name   string
+type HltvContainerConfig struct {
+	Cmd      []string
+	DemoPath string
+	CfgPath  string
+	Mounts   []mount.Mount
+	HltvID   int64
 }
 
-type DockerContainerManager struct {
+type Docker struct {
 	client *client.Client
+	Attach types.HijackedResponse
 }
 
-func NewDockerContainerManager() (*DockerContainerManager, error) {
+func NewDockerClient() (*Docker, error) {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		return nil, err
 	}
-	return &DockerContainerManager{client: cli}, nil
+	return &Docker{client: cli}, nil
 }
 
-func (m *DockerContainerManager) CreateAndStart(config ContainerConfig) (types.HijackedResponse, string, error) {
+func (docker *Docker) CreateAndStart(config HltvContainerConfig) error {
 	ctx := context.Background()
 
-	resp, err := m.client.ContainerCreate(ctx, &container.Config{
-		Image:        config.Image,
+	resp, err := docker.client.ContainerCreate(ctx, &container.Config{
+		Image:        "ghcr.io/wesstorn/hltv-files:v1.0", // TODO: Add config
 		Cmd:          config.Cmd,
 		Tty:          true,
 		OpenStdin:    true,
@@ -40,14 +43,25 @@ func (m *DockerContainerManager) CreateAndStart(config ContainerConfig) (types.H
 		AttachStdout: true,
 		AttachStderr: true,
 	}, &container.HostConfig{
-		Mounts:     config.Mounts,
+		Mounts: []mount.Mount{
+			{
+				Type:   mount.TypeBind,
+				Source: config.DemoPath,
+				Target: "/home/hltv/cstrike",
+			},
+			{
+				Type:   mount.TypeBind,
+				Source: config.CfgPath,
+				Target: "/home/hltv/hltv.cfg",
+			},
+		},
 		AutoRemove: true,
-	}, nil, nil, config.Name)
+	}, nil, nil, "hltv_"+strconv.FormatInt(config.HltvID, 10))
 	if err != nil {
-		return types.HijackedResponse{}, "", err
+		return err
 	}
 
-	attach, err := m.client.ContainerAttach(ctx, resp.ID, container.AttachOptions{
+	docker.Attach, err = docker.client.ContainerAttach(ctx, resp.ID, container.AttachOptions{
 		Stream: true,
 		Stdin:  true,
 		Stdout: true,
@@ -55,13 +69,13 @@ func (m *DockerContainerManager) CreateAndStart(config ContainerConfig) (types.H
 		Logs:   true,
 	})
 	if err != nil {
-		return types.HijackedResponse{}, "", err
+		return err
 	}
 
-	err = m.client.ContainerStart(ctx, resp.ID, container.StartOptions{})
+	err = docker.client.ContainerStart(ctx, resp.ID, container.StartOptions{})
 	if err != nil {
-		return types.HijackedResponse{}, "", err
+		return err
 	}
 
-	return attach, resp.ID, nil
+	return nil
 }

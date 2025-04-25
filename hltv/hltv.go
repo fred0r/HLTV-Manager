@@ -5,23 +5,15 @@ import (
 	log "HLTV-Manager/logger"
 	"fmt"
 	"os"
-	"strconv"
-	"sync"
-
-	"github.com/docker/docker/api/types"
-	"github.com/docker/docker/api/types/mount"
+	"strings"
 )
 
 const maxLogLines = 100
 
 type HLTV struct {
-	ID        int64
-	Settings  Settings
-	Log       []string
-	mu        sync.Mutex
-	Container *docker.DockerContainerManager
-	Attach    types.HijackedResponse
-	ContID    string
+	ID       int64
+	Settings Settings
+	Docker   *docker.Docker
 }
 
 type Settings struct {
@@ -33,16 +25,16 @@ type Settings struct {
 }
 
 func NewHLTV(id int64, settings Settings) (*HLTV, error) {
-	containerManager, err := docker.NewDockerContainerManager()
+	docker, err := docker.NewDockerClient()
 	if err != nil {
 		log.ErrorLogger.Printf("Ошибка при инициализации контейнера hltv (%d): %v", id, err)
 		return nil, err
 	}
 
 	return &HLTV{
-		ID:        id,
-		Settings:  settings,
-		Container: containerManager,
+		ID:       id,
+		Settings: settings,
+		Docker:   docker,
 	}, nil
 }
 
@@ -69,47 +61,16 @@ func (hltv *HLTV) Start() error {
 		"+record", hltv.Settings.DemoName,
 	}
 
-	hltv.Attach, hltv.ContID, err = hltv.Container.CreateAndStart(docker.ContainerConfig{
-		Image: "ghcr.io/wesstorn/hltv-files:v1.0",
-		Cmd:   cmd,
-		Mounts: []mount.Mount{
-			{
-				Type:   mount.TypeBind,
-				Source: cfgPath,
-				Target: "/home/hltv/hltv.cfg",
-			},
-			{
-				Type:   mount.TypeBind,
-				Source: demoPath,
-				Target: "/home/hltv/cstrike",
-			},
-		},
-		Name: "hltv_" + strconv.FormatInt(hltv.ID, 10),
+	err = hltv.Docker.CreateAndStart(docker.HltvContainerConfig{
+		Cmd:      cmd,
+		DemoPath: demoPath,
+		CfgPath:  cfgPath,
+		HltvID:   hltv.ID,
 	})
-
 	if err != nil {
 		log.ErrorLogger.Printf("Обшика при запуске контейнера hltv (%d): %v", hltv.ID, err)
 		return err
 	}
-	go func() { // READER CONTAINER TODO: Вынести отдельно и использовать по надобности
-		buf := make([]byte, 1024)
-		for {
-			n, err := hltv.Attach.Reader.Read(buf)
-			if err != nil {
-				break
-			}
-			line := string(buf[:n])
-
-			hltv.mu.Lock()
-			hltv.Log = append(hltv.Log, line)
-			if len(hltv.Log) > maxLogLines {
-				hltv.Log = hltv.Log[len(hltv.Log)-maxLogLines:]
-			}
-
-			fmt.Println(line)
-			hltv.mu.Unlock()
-		}
-	}()
 
 	return nil
 }
@@ -120,22 +81,29 @@ func (hltv *HLTV) Quit() error {
 		return err
 	}
 
-	if closer, ok := hltv.Attach.Conn.(interface{ CloseWrite() error }); ok {
+	if closer, ok := hltv.Docker.Attach.Conn.(interface{ CloseWrite() error }); ok {
 		_ = closer.CloseWrite()
 	}
 
-	hltv.Attach.Close()
+	hltv.Docker.Attach.Close()
 
 	return nil
 }
 
-func (hltv *HLTV) GetLog() []string {
-	hltv.mu.Lock()
-	defer hltv.mu.Unlock()
-	return append([]string{}, hltv.Log...) // копия
+func (hltv *HLTV) ShowTerminal() {
+	buf := make([]byte, 1024)
+	for {
+		n, err := hltv.Docker.Attach.Reader.Read(buf)
+		if err != nil {
+			break
+		}
+		line := string(buf[:n])
+		line = strings.TrimRight(line, "\n")
+		fmt.Println(line)
+	}
 }
 
 func (hltv *HLTV) WriteCommand(cmd string) error {
-	_, err := hltv.Attach.Conn.Write([]byte(cmd + "\n"))
+	_, err := hltv.Docker.Attach.Conn.Write([]byte(cmd + "\n"))
 	return err
 }
