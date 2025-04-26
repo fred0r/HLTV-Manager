@@ -13,6 +13,7 @@ const maxLogLines = 100
 type HLTV struct {
 	ID       int64
 	Settings Settings
+	Demos    []Demos
 	Docker   *docker.Docker
 }
 
@@ -22,6 +23,12 @@ type Settings struct {
 	Port     string
 	DemoName string
 	Config   []string
+}
+
+type Demos struct {
+	Map  string
+	Date string
+	Time string
 }
 
 func NewHLTV(id int64, settings Settings) (*HLTV, error) {
