@@ -1,11 +1,13 @@
 package main
 
 import (
+	"HLTV-Manager/config"
 	"HLTV-Manager/hltv"
 	log "HLTV-Manager/logger"
 	"HLTV-Manager/reader"
 	"HLTV-Manager/site"
 	"fmt"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -18,7 +20,13 @@ func main() {
 		return
 	}
 
-	read, err := reader.ReadHLTVRunners("hltv-runners.yaml")
+	err = config.InitConfig()
+	if err != nil {
+		log.ErrorLogger.Printf("Ошибка при инициализации конфигурации: %v", err)
+		return
+	}
+
+	read, err := reader.ReadHLTVRunners()
 	if err != nil {
 		log.ErrorLogger.Printf("Обшика в чтении данных конфига hltv: %v", err)
 		return
@@ -38,7 +46,7 @@ func main() {
 			Config:     runner.Config,
 		}
 
-		h, err := hltv.NewHLTV(int64(i+1), hltvConfig)
+		h, err := hltv.NewHLTV(i+1, hltvConfig)
 		if err != nil {
 			log.ErrorLogger.Printf("Ошибка при создании HLTV %d: %v", i, err)
 			continue
@@ -73,11 +81,12 @@ func main() {
 		os.Exit(0)
 	}()
 
-	// log.InfoLogger.Printf("Starting site")
-	// err = http.ListenAndServe("localhost:3002", nil)
-	// if err != nil {
-	// 	log.ErrorLogger.Fatal(err)
-	// }
+	address := fmt.Sprintf("%s:%s", config.SiteIP(), config.SitePort())
+	log.InfoLogger.Println("Starting site: ", address)
+	err = http.ListenAndServe(address, nil)
+	if err != nil {
+		log.ErrorLogger.Fatal(err)
+	}
 
 	// for {
 	// 	in := bufio.NewReader(os.Stdin)

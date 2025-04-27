@@ -6,6 +6,8 @@ import (
 	"strconv"
 	"time"
 
+	Config "HLTV-Manager/config"
+
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/mount"
@@ -17,7 +19,7 @@ type HltvContainerConfig struct {
 	DemoPath string
 	CfgPath  string
 	Mounts   []mount.Mount
-	HltvID   int64
+	HltvID   int
 }
 
 type Docker struct {
@@ -42,7 +44,7 @@ func (docker *Docker) CreateAndStart(config HltvContainerConfig) error {
 	}
 
 	resp, err := docker.client.ContainerCreate(ctx, &container.Config{
-		Image:        "ghcr.io/wesstorn/hltv-files:v1.0", // TODO: Add config
+		Image:        Config.HltvDocker(), // TODO: Add config
 		Cmd:          config.Cmd,
 		Tty:          true,
 		OpenStdin:    true,
@@ -63,7 +65,7 @@ func (docker *Docker) CreateAndStart(config HltvContainerConfig) error {
 			},
 		},
 		AutoRemove: true,
-	}, nil, nil, "hltv_"+strconv.FormatInt(config.HltvID, 10))
+	}, nil, nil, "hltv_"+strconv.Itoa(config.HltvID))
 	if err != nil {
 		return err
 	}
@@ -87,10 +89,10 @@ func (docker *Docker) CreateAndStart(config HltvContainerConfig) error {
 	return nil
 }
 
-func (docker *Docker) StopContainerIfExists(hltvID int64) error {
+func (docker *Docker) StopContainerIfExists(hltvID int) error {
 	ctx := context.Background()
 
-	containerName := "hltv_" + strconv.FormatInt(hltvID, 10)
+	containerName := "hltv_" + strconv.Itoa(hltvID)
 	containers, err := docker.client.ContainerList(ctx, container.ListOptions{All: true})
 	if err != nil {
 		return fmt.Errorf("failed to list containers: %w", err)

@@ -4,13 +4,14 @@ import (
 	"io"
 	"os"
 
+	"HLTV-Manager/config"
 	log "HLTV-Manager/logger"
 
 	"gopkg.in/yaml.v3"
 )
 
-func ReadHLTVRunners(filePath string) ([]HLTV, error) {
-	file, err := os.OpenFile(filePath, os.O_RDONLY, os.FileMode(0644))
+func ReadHLTVRunners() ([]HLTV, error) {
+	file, err := os.OpenFile(config.HltvRunnerFile(), os.O_RDONLY, os.FileMode(0644))
 	if err != nil {
 		if !os.IsNotExist(err) {
 			log.ErrorLogger.Println(err)

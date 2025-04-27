@@ -30,7 +30,7 @@ func (site *Site) downloadHandler(w http.ResponseWriter, r *http.Request) {
 
 	var hltv *hltv.HLTV
 	for _, h := range site.HLTV {
-		if h.ID == int64(hltvID) {
+		if h.ID == hltvID {
 			hltv = h
 			break
 		}

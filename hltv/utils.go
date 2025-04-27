@@ -9,8 +9,8 @@ import (
 	"strings"
 )
 
-func createDemosDir(path string, id int64) (string, error) {
-	demoPath := filepath.Join(path, "demos", strconv.FormatInt(id, 10), "cstrike")
+func createDemosDir(path string, id int) (string, error) {
+	demoPath := filepath.Join(path, "demos", strconv.Itoa(id), "cstrike")
 
 	err := os.MkdirAll(demoPath, 0755)
 	if err != nil {
@@ -27,8 +27,8 @@ func createDemosDir(path string, id int64) (string, error) {
 	return demoPath, nil
 }
 
-func createHltvCfg(path string, id int64, config []string) (string, error) {
-	cfgPath := filepath.Join(path, "demos", strconv.FormatInt(id, 10), "hltv.cfg")
+func createHltvCfg(path string, id int, config []string) (string, error) {
+	cfgPath := filepath.Join(path, "demos", strconv.Itoa(id), "hltv.cfg")
 
 	file, err := os.OpenFile(cfgPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
 	if err != nil {

@@ -11,7 +11,7 @@ import (
 const maxLogLines = 100
 
 type HLTV struct {
-	ID       int64
+	ID       int
 	Settings Settings
 	Demos    []Demos
 	Docker   *docker.Docker
@@ -35,7 +35,7 @@ type Demos struct {
 	Map  string
 }
 
-func NewHLTV(id int64, settings Settings) (*HLTV, error) {
+func NewHLTV(id int, settings Settings) (*HLTV, error) {
 	docker, err := docker.NewDockerClient()
 	if err != nil {
 		log.ErrorLogger.Printf("Ошибка при инициализации контейнера hltv (%d): %v", id, err)
