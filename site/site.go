@@ -6,7 +6,7 @@ import (
 )
 
 type Site struct {
-	HLTV *[]hltv.HLTV
+	HLTV []*hltv.HLTV
 }
 
 func (site *Site) Init() {

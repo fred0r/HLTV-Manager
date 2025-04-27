@@ -27,85 +27,35 @@ func main() {
 
 	log.InfoLogger.Println(read)
 
-	hltv := &[]hltv.HLTV{{
-		ID: 1,
-		Settings: hltv.Settings{
-			Name:     read[0].Name,
-			Connect:  read[0].Connect,
-			Port:     read[0].Port,
-			DemoName: read[0].DemoName,
-			Config: []string{
-				"+exec hltv.cfg",
-				"+sv_lan 0",
-				"+maxclients 32",
-			},
-		},
-		Demos: []hltv.Demos{
-			{
-				Map:  "de_dust2",
-				Date: "2025.04.25",
-				Time: "12:44",
-			},
-			{
-				Map:  "de_dust",
-				Date: "2025.04.25",
-				Time: "12:55",
-			},
-		},
-		Docker: nil,
-	},
-		{
-			ID: 1,
-			Settings: hltv.Settings{
-				Name:     "Second HLTV",
-				Connect:  "127.0.0.1:27016",
-				Port:     "27021",
-				DemoName: "second_demo",
-				Config: []string{
-					"+exec hltv.cfg",
-					"+sv_lan 0",
-					"+maxclients 32",
-				},
-			},
-			Demos: []hltv.Demos{
-				{
-					Map:  "de_dust2",
-					Date: "2025.04.25",
-					Time: "12:44",
-				},
-				{
-					Map:  "de_dust",
-					Date: "2025.04.25",
-					Time: "12:55",
-				},
-			},
-			Docker: nil,
-		},
+	var hltvs []*hltv.HLTV
+
+	for i, runner := range read {
+		hltvConfig := hltv.Settings{
+			Name:     runner.Name,
+			Connect:  runner.Connect,
+			Port:     runner.Port,
+			DemoName: runner.DemoName,
+			Config:   runner.Config,
+		}
+
+		h, err := hltv.NewHLTV(int64(i+1), hltvConfig)
+		if err != nil {
+			log.ErrorLogger.Printf("Ошибка при создании HLTV %d: %v", i, err)
+			continue
+		}
+
+		err = h.Start()
+		if err != nil {
+			log.ErrorLogger.Printf("Ошибка при запуске HLTV %d: %v", i, err)
+			continue
+		}
+
+		hltvs = append(hltvs, h)
+
+		go h.ShowTerminal()
 	}
 
-	// hltvConfig := hltv.Settings{
-	// 	Name:     read[0].Name,
-	// 	Connect:  read[0].Connect,
-	// 	Port:     read[0].Port,
-	// 	DemoName: read[0].DemoName,
-	// 	Config:   read[0].Config,
-	// }
-
-	// hltv, err := hltv.NewHLTV(1, hltvConfig)
-	// if err != nil {
-	// 	log.ErrorLogger.Printf("Ошибка при создании HLTV: %v", err)
-	// 	return
-	// }
-
-	// err = hltv.Start()
-	// if err != nil {
-	// 	log.ErrorLogger.Printf("Ошибка запуске HLTV: %v", err)
-	// 	return
-	// }
-
-	// go hltv.ShowTerminal()
-
-	site := &site.Site{HLTV: hltv}
+	site := &site.Site{HLTV: hltvs}
 	go site.Init()
 
 	log.InfoLogger.Printf("Starting site")

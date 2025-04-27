@@ -26,9 +26,10 @@ type Settings struct {
 }
 
 type Demos struct {
-	Map  string
+	Name string
 	Date string
 	Time string
+	Map  string
 }
 
 func NewHLTV(id int64, settings Settings) (*HLTV, error) {

@@ -18,9 +18,9 @@ func (site *Site) demosHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var hltv *hltv.HLTV
-	for _, h := range *site.HLTV {
+	for _, h := range site.HLTV {
 		if h.ID == int64(id) {
-			hltv = &h
+			hltv = h
 			break
 		}
 	}
