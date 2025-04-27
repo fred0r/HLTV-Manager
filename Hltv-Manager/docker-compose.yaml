@@ -1,0 +1,24 @@
+version: '3.8'
+
+networks:
+  hltv_manager_net:
+    external: false
+
+services:
+  hltv_manager:
+    image: hltv-manager:v0.1
+    container_name: hltv_manager
+    networks:
+     - hltv_manager_net
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./log:/app/log
+      - ./hltv-runners.yaml:/app/hltv-runners.yaml
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      SITE_IP: "0.0.0.0"
+      SITE_PORT: "3000"
+      HLTV_DOCKER: "ghcr.io/wesstorn/hltv-files:v1.0"
+      HLTV_RUNNER_FILE: "hltv-runners.yaml"
+    restart: unless-stopped

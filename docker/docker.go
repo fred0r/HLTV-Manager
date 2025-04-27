@@ -44,7 +44,7 @@ func (docker *Docker) CreateAndStart(config HltvContainerConfig) error {
 	}
 
 	resp, err := docker.client.ContainerCreate(ctx, &container.Config{
-		Image:        Config.HltvDocker(), // TODO: Add config
+		Image:        Config.HltvDocker(),
 		Cmd:          config.Cmd,
 		Tty:          true,
 		OpenStdin:    true,
