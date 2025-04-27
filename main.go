@@ -6,7 +6,6 @@ import (
 	"HLTV-Manager/reader"
 	"HLTV-Manager/site"
 	"fmt"
-	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -74,11 +73,11 @@ func main() {
 		os.Exit(0)
 	}()
 
-	log.InfoLogger.Printf("Starting site")
-	err = http.ListenAndServe("localhost:3002", nil)
-	if err != nil {
-		log.ErrorLogger.Fatal(err)
-	}
+	// log.InfoLogger.Printf("Starting site")
+	// err = http.ListenAndServe("localhost:3002", nil)
+	// if err != nil {
+	// 	log.ErrorLogger.Fatal(err)
+	// }
 
 	// for {
 	// 	in := bufio.NewReader(os.Stdin)
