@@ -3,6 +3,7 @@ HLTV:
     Connect: 85.192.30.229:27015
     HltvPort: 28015
     DemoName: server
+    MaxDemoDay: 3
     Config:
       - hostname "HLTV | TEST"
       - name "HLTV-Manager"

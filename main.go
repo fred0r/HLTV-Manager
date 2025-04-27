@@ -31,11 +31,12 @@ func main() {
 
 	for i, runner := range read {
 		hltvConfig := hltv.Settings{
-			Name:     runner.Name,
-			Connect:  runner.Connect,
-			Port:     runner.Port,
-			DemoName: runner.DemoName,
-			Config:   runner.Config,
+			Name:       runner.Name,
+			Connect:    runner.Connect,
+			Port:       runner.Port,
+			DemoName:   runner.DemoName,
+			MaxDemoDay: runner.MaxDemoDay,
+			Config:     runner.Config,
 		}
 
 		h, err := hltv.NewHLTV(int64(i+1), hltvConfig)
@@ -58,24 +59,26 @@ func main() {
 	site := &site.Site{HLTV: hltvs}
 	go site.Init()
 
-	log.InfoLogger.Printf("Starting site")
-	err = http.ListenAndServe("localhost:3002", nil)
-	if err != nil {
-		log.ErrorLogger.Fatal(err)
-	}
-
 	shutDown := make(chan os.Signal, 1)
 	signal.Notify(shutDown, syscall.SIGINT, syscall.SIGTERM)
 
 	go func() {
 		<-shutDown
 
-		//hltv.Quit()
+		for _, hltv := range hltvs {
+			hltv.Quit()
+		}
 
 		fmt.Println("Программа завершена.")
 
 		os.Exit(0)
 	}()
+
+	log.InfoLogger.Printf("Starting site")
+	err = http.ListenAndServe("localhost:3002", nil)
+	if err != nil {
+		log.ErrorLogger.Fatal(err)
+	}
 
 	// for {
 	// 	in := bufio.NewReader(os.Stdin)

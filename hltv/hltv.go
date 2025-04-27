@@ -18,14 +18,17 @@ type HLTV struct {
 }
 
 type Settings struct {
-	Name     string
-	Connect  string
-	Port     string
-	DemoName string
-	Config   []string
+	Name       string
+	Connect    string
+	Port       string
+	DemoDir    string
+	DemoName   string
+	MaxDemoDay string
+	Config     []string
 }
 
 type Demos struct {
+	ID   int
 	Name string
 	Date string
 	Time string
@@ -53,7 +56,7 @@ func (hltv *HLTV) Start() error {
 		return err
 	}
 
-	demoPath, err := createDemosDir(path, hltv.ID)
+	hltv.Settings.DemoDir, err = createDemosDir(path, hltv.ID)
 	if err != nil {
 		return err
 	}
@@ -69,12 +72,18 @@ func (hltv *HLTV) Start() error {
 			"-port", hltv.Settings.Port,
 			"+record", hltv.Settings.DemoName,
 		},
-		DemoPath: demoPath,
+		DemoPath: hltv.Settings.DemoDir,
 		CfgPath:  cfgPath,
 		HltvID:   hltv.ID,
 	})
 	if err != nil {
 		log.ErrorLogger.Printf("Обшика при запуске контейнера hltv (%d): %v", hltv.ID, err)
+		return err
+	}
+
+	err = hltv.DemoControl()
+	if err != nil {
+		log.ErrorLogger.Printf("Обшика при чтении демок hltv (%d): %v", hltv.ID, err)
 		return err
 	}
 

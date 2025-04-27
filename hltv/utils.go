@@ -2,6 +2,7 @@ package hltv
 
 import (
 	log "HLTV-Manager/logger"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -50,4 +51,33 @@ func createHltvCfg(path string, id int64, config []string) (string, error) {
 	}
 
 	return cfgPath, nil
+}
+
+func parseDemoFilename(filename string) (Demos, error) {
+	name := strings.TrimSuffix(filename, ".dem")
+	name = strings.TrimPrefix(name, "server-")
+
+	parts := strings.SplitN(name, "-", 2)
+	if len(parts) != 2 {
+		return Demos{}, fmt.Errorf("неправильный формат имени файла")
+	}
+
+	datetime := parts[0]
+	mapName := parts[1]
+
+	if len(datetime) < 10 {
+		return Demos{}, fmt.Errorf("неправильный формат даты/времени")
+	}
+	datePart := datetime[:6]
+	timePart := datetime[6:]
+
+	date := fmt.Sprintf("20%s.%s.%s", datePart[:2], datePart[2:4], datePart[4:6])
+	time := fmt.Sprintf("%s:%s", timePart[:2], timePart[2:4])
+
+	return Demos{
+		Name: filename,
+		Date: date,
+		Time: time,
+		Map:  mapName,
+	}, nil
 }
