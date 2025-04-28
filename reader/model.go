@@ -10,5 +10,5 @@ type HLTV struct {
 	Port       string   `yaml:"HltvPort"`
 	DemoName   string   `yaml:"DemoName"`
 	MaxDemoDay string   `yaml:"MaxDemoDay"`
-	Config     []string `yaml:"Config"`
+	Cvars      []string `yaml:"Cvars"`
 }

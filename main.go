@@ -43,7 +43,7 @@ func main() {
 			Port:       runner.Port,
 			DemoName:   runner.DemoName,
 			MaxDemoDay: runner.MaxDemoDay,
-			Config:     runner.Config,
+			Cvars:      runner.Cvars,
 		}
 
 		h, err := hltv.NewHLTV(i+1, hltvConfig)

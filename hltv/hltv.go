@@ -4,7 +4,6 @@ import (
 	"HLTV-Manager/docker"
 	log "HLTV-Manager/logger"
 	"fmt"
-	"os"
 	"strings"
 )
 
@@ -24,7 +23,7 @@ type Settings struct {
 	DemoDir    string
 	DemoName   string
 	MaxDemoDay string
-	Config     []string
+	Cvars      []string
 }
 
 type Demos struct {
@@ -50,18 +49,14 @@ func NewHLTV(id int, settings Settings) (*HLTV, error) {
 }
 
 func (hltv *HLTV) Start() error {
-	path, err := os.Getwd()
-	if err != nil {
-		log.ErrorLogger.Printf("Обшика при получении пути hltv (%d): %v", hltv.ID, err)
-		return err
-	}
+	var err error
 
-	hltv.Settings.DemoDir, err = createDemosDir(path, hltv.ID)
+	hltv.Settings.DemoDir, err = createDemosDir(hltv.ID)
 	if err != nil {
 		return err
 	}
 
-	cfgPath, err := createHltvCfg(path, hltv.ID, hltv.Settings.Config)
+	cfgPath, err := createHltvCfg(hltv.ID, hltv.Settings.Cvars)
 	if err != nil {
 		return err
 	}

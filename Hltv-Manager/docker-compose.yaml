@@ -16,9 +16,11 @@ services:
       - ./log:/app/log
       - ./hltv-runners.yaml:/app/hltv-runners.yaml
       - /var/run/docker.sock:/var/run/docker.sock
+      - /media/hltv-manager/demos:/media/hltv-manager/demos
     environment:
       SITE_IP: "0.0.0.0"
       SITE_PORT: "3000"
       HLTV_DOCKER: "ghcr.io/wesstorn/hltv-files:v1.0"
       HLTV_RUNNER_FILE: "hltv-runners.yaml"
+      HLT_DEMOS_DIR: "/media/hltv-manager"
     restart: unless-stopped

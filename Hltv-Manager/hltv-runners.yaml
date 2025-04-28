@@ -4,7 +4,7 @@ HLTV:
     HltvPort: 28015
     DemoName: server
     MaxDemoDay: 3
-    Config:
+    Cvars:
       - hostname "HLTV | TEST"
       - name "HLTV-Manager"
       - maxclients "0"

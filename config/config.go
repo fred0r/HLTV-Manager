@@ -12,6 +12,7 @@ type Config struct {
 	SitePort       string
 	HltvDocker     string
 	HltvRunnerFile string
+	HltvDemosDir   string
 }
 
 var data Config
@@ -24,6 +25,7 @@ func InitConfig() error {
 		SitePort:       os.Getenv("SITE_PORT"),
 		HltvDocker:     os.Getenv("HLTV_DOCKER"),
 		HltvRunnerFile: os.Getenv("HLTV_RUNNER_FILE"),
+		HltvDemosDir:   os.Getenv("HLT_DEMOS_DIR"),
 	}
 
 	log.InfoLogger.Printf("Конфигурация загружена: %v", data)
@@ -45,4 +47,8 @@ func HltvDocker() string {
 
 func HltvRunnerFile() string {
 	return data.HltvRunnerFile
+}
+
+func HltvDemosDir() string {
+	return data.HltvDemosDir
 }

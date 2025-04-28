@@ -1,6 +1,7 @@
 package hltv
 
 import (
+	"HLTV-Manager/config"
 	log "HLTV-Manager/logger"
 	"fmt"
 	"os"
@@ -9,8 +10,8 @@ import (
 	"strings"
 )
 
-func createDemosDir(path string, id int) (string, error) {
-	demoPath := filepath.Join(path, "demos", strconv.Itoa(id), "cstrike")
+func createDemosDir(id int) (string, error) {
+	demoPath := filepath.Join(config.HltvDemosDir(), "demos", strconv.Itoa(id), "cstrike")
 
 	err := os.MkdirAll(demoPath, 0755)
 	if err != nil {
@@ -27,8 +28,8 @@ func createDemosDir(path string, id int) (string, error) {
 	return demoPath, nil
 }
 
-func createHltvCfg(path string, id int, config []string) (string, error) {
-	cfgPath := filepath.Join(path, "demos", strconv.Itoa(id), "hltv.cfg")
+func createHltvCfg(id int, cvars []string) (string, error) {
+	cfgPath := filepath.Join(config.HltvDemosDir(), "demos", strconv.Itoa(id), "hltv.cfg")
 
 	file, err := os.OpenFile(cfgPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
 	if err != nil {
@@ -37,7 +38,7 @@ func createHltvCfg(path string, id int, config []string) (string, error) {
 	}
 	defer file.Close()
 
-	fileContent := strings.Join(config, "\n") + "\n"
+	fileContent := strings.Join(cvars, "\n") + "\n"
 	_, err = file.Write([]byte(fileContent))
 	if err != nil {
 		log.ErrorLogger.Printf("Ошибка при записи в hltv.cfg (%d): %v", id, err)

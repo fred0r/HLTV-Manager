@@ -16,6 +16,8 @@ func (h *HLTV) DemoControl() error {
 		return fmt.Errorf("ошибка обхода папки: %w", err)
 	}
 
+	fmt.Println(h.Demos)
+
 	sort.Slice(h.Demos, func(i, j int) bool {
 		dateI, _ := time.Parse("2006.01.02 15:04", h.Demos[i].Date+" "+h.Demos[i].Time)
 		dateJ, _ := time.Parse("2006.01.02 15:04", h.Demos[j].Date+" "+h.Demos[j].Time)
@@ -34,6 +36,8 @@ func (h *HLTV) LoadDemosFromFolder() error {
 	var demos []Demos
 
 	var id int
+
+	fmt.Println(h.Settings.DemoDir)
 
 	err := filepath.Walk(h.Settings.DemoDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
