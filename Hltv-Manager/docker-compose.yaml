@@ -11,7 +11,7 @@ services:
     networks:
      - hltv_manager_net
     ports:
-      - "3000:3000"
+      - "3000:3000" # Указываем порт на котом хотим развернуть сайт "[ваш порт]:3000"
     volumes:
       - ./log:/app/log
       - ./hltv-runners.yaml:/app/hltv-runners.yaml
