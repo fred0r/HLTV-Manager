@@ -54,8 +54,8 @@ func (h *HLTV) LoadDemosFromFolder() error {
 			id++
 			demo, err := parseDemoFilename(h.Settings.DemoName, info.Name())
 			if err != nil {
-				log.ErrorLogger.Printf("HLTV (ID: %d, Name: %s) Error parsing file: %s, %v", h.ID, h.Settings.Name, info.Name(), err)
-				return err
+				log.WarningLogger.Printf("HLTV (ID: %d, Name: %s) Error parsing file: %s, %v", h.ID, h.Settings.Name, info.Name(), err)
+				return nil
 			}
 			demo.ID = id
 			demos = append(demos, demo)
