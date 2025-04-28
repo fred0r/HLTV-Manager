@@ -46,7 +46,7 @@ func (h *HLTV) LoadDemosFromFolder() error {
 
 		if strings.HasSuffix(info.Name(), ".dem") {
 			id++
-			demo, err := parseDemoFilename(info.Name())
+			demo, err := parseDemoFilename(h.Settings.DemoName, info.Name())
 			demo.ID = id
 			if err != nil {
 				fmt.Println("Ошибка парсинга файла:", info.Name(), err)
@@ -105,5 +105,5 @@ func (h *HLTV) GetDemoFileName(demoID int) (string, error) {
 	datePart := strings.ReplaceAll(demo.Date, ".", "")[2:]
 	timePart := strings.ReplaceAll(demo.Time, ":", "")
 
-	return fmt.Sprintf("server-%s-%s.dem", datePart+timePart, demo.Map), nil
+	return fmt.Sprintf("%s-%s-%s.dem", h.Settings.DemoName, datePart+timePart, demo.Map), nil
 }

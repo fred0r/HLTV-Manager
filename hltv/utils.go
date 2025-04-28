@@ -53,9 +53,10 @@ func createHltvCfg(path string, id int, config []string) (string, error) {
 	return cfgPath, nil
 }
 
-func parseDemoFilename(filename string) (Demos, error) {
+func parseDemoFilename(demoname string, filename string) (Demos, error) {
 	name := strings.TrimSuffix(filename, ".dem")
-	name = strings.TrimPrefix(name, "server-")
+
+	name = strings.TrimPrefix(name, fmt.Sprintf("%s-", demoname))
 
 	parts := strings.SplitN(name, "-", 2)
 	if len(parts) != 2 {
