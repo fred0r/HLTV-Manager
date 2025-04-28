@@ -13,7 +13,7 @@ func (site *Site) demosHandler(w http.ResponseWriter, r *http.Request) {
 
 	id, err := strconv.Atoi(idStr)
 	if err != nil {
-		http.Error(w, "Неверный ID HLTV", http.StatusBadRequest)
+		http.Error(w, "Invalid HLTV ID.", http.StatusBadRequest)
 		return
 	}
 
@@ -26,7 +26,7 @@ func (site *Site) demosHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if hltv == nil {
-		http.Error(w, "HLTV сервер не найден", http.StatusNotFound)
+		http.Error(w, "HLTV server not found.", http.StatusNotFound)
 		return
 	}
 
@@ -36,12 +36,12 @@ func (site *Site) demosHandler(w http.ResponseWriter, r *http.Request) {
 	)
 
 	if err != nil {
-		http.Error(w, "Ошибка шаблона: "+err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Template error: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	err = tmpl.ExecuteTemplate(w, "demos", hltv)
 	if err != nil {
-		http.Error(w, "Ошибка рендера: "+err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Rendering error: "+err.Error(), http.StatusInternalServerError)
 	}
 }

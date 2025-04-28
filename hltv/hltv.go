@@ -37,7 +37,7 @@ type Demos struct {
 func NewHLTV(id int, settings Settings) (*HLTV, error) {
 	docker, err := docker.NewDockerClient()
 	if err != nil {
-		log.ErrorLogger.Printf("Ошибка при инициализации контейнера hltv (%d): %v", id, err)
+		log.ErrorLogger.Printf("HLTV (ID: %d, Name: %s) Error creating Docker client: %v", id, settings.Name, err)
 		return nil, err
 	}
 
@@ -51,14 +51,19 @@ func NewHLTV(id int, settings Settings) (*HLTV, error) {
 func (hltv *HLTV) Start() error {
 	var err error
 
-	hltv.Settings.DemoDir, err = createDemosDir(hltv.ID)
+	hltv.Settings.DemoDir, err = createDemosDir(hltv)
 	if err != nil {
 		return err
 	}
 
-	cfgPath, err := createHltvCfg(hltv.ID, hltv.Settings.Cvars)
+	cfgPath, err := createHltvCfg(hltv)
 	if err != nil {
 		return err
+	}
+
+	hltvData := docker.Hltv{
+		ID:   hltv.ID,
+		Name: hltv.Settings.Name,
 	}
 
 	err = hltv.Docker.CreateAndStart(docker.HltvContainerConfig{
@@ -69,16 +74,14 @@ func (hltv *HLTV) Start() error {
 		},
 		DemoPath: hltv.Settings.DemoDir,
 		CfgPath:  cfgPath,
-		HltvID:   hltv.ID,
+		Hltv:     hltvData,
 	})
 	if err != nil {
-		log.ErrorLogger.Printf("Обшика при запуске контейнера hltv (%d): %v", hltv.ID, err)
 		return err
 	}
 
 	err = hltv.DemoControl()
 	if err != nil {
-		log.ErrorLogger.Printf("Обшика при чтении демок hltv (%d): %v", hltv.ID, err)
 		return err
 	}
 
@@ -88,6 +91,7 @@ func (hltv *HLTV) Start() error {
 func (hltv *HLTV) Quit() error {
 	err := hltv.WriteCommand("quit")
 	if err != nil {
+		log.ErrorLogger.Printf("HLTV (ID: %d, Name: %s) Failed to write quit command: %v", hltv.ID, hltv.Settings.Name, err)
 		return err
 	}
 

@@ -13,12 +13,12 @@ func (site *Site) homeHandler(w http.ResponseWriter, r *http.Request) {
 	)
 
 	if err != nil {
-		http.Error(w, "Ошибка шаблона: "+err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Template error: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	err = tmpl.ExecuteTemplate(w, "home", site.HLTV)
 	if err != nil {
-		http.Error(w, "Ошибка рендера: "+err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Rendering error: "+err.Error(), http.StatusInternalServerError)
 	}
 }

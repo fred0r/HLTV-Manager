@@ -12,19 +12,19 @@ import (
 func (site *Site) downloadHandler(w http.ResponseWriter, r *http.Request) {
 	parts := strings.Split(r.URL.Path, "/")
 	if len(parts) < 4 {
-		http.Error(w, "Неверный путь", http.StatusBadRequest)
+		http.Error(w, "Invalid url.", http.StatusBadRequest)
 		return
 	}
 
 	hltvID, err := strconv.Atoi(parts[2])
 	if err != nil {
-		http.Error(w, "Неверный ID HLTV", http.StatusBadRequest)
+		http.Error(w, "Invalid HLTV ID.", http.StatusBadRequest)
 		return
 	}
 
 	demoID, err := strconv.Atoi(parts[3])
 	if err != nil {
-		http.Error(w, "Неверный ID Demo", http.StatusBadRequest)
+		http.Error(w, "Invalid Demo ID.", http.StatusBadRequest)
 		return
 	}
 
@@ -37,19 +37,19 @@ func (site *Site) downloadHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if hltv == nil {
-		http.Error(w, "HLTV сервер не найден", http.StatusNotFound)
+		http.Error(w, "HLTV server not found.", http.StatusNotFound)
 		return
 	}
 
 	demoName, err := hltv.GetDemoFileName(demoID)
 	if err != nil {
-		http.Error(w, "Неверный GetDemoFileName Demo", http.StatusBadRequest)
+		http.Error(w, "Invalid GetDemoFileName Demo.", http.StatusBadRequest)
 		return
 	}
 
 	demoFilePath := filepath.Join(hltv.Settings.DemoDir, demoName)
 	if _, err := os.Stat(demoFilePath); os.IsNotExist(err) {
-		http.Error(w, "Файл демки не найден", http.StatusNotFound)
+		http.Error(w, "Demo file not found.", http.StatusNotFound)
 		return
 	}
 

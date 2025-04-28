@@ -1,6 +1,7 @@
 package hltv
 
 import (
+	log "HLTV-Manager/logger"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -13,7 +14,7 @@ import (
 func (h *HLTV) DemoControl() error {
 	err := h.LoadDemosFromFolder()
 	if err != nil {
-		return fmt.Errorf("ошибка обхода папки: %w", err)
+		return err
 	}
 
 	fmt.Println(h.Demos)
@@ -26,7 +27,7 @@ func (h *HLTV) DemoControl() error {
 
 	err = h.DeleteOldDemos()
 	if err != nil {
-		return fmt.Errorf("ошибка обхода папки: %w", err)
+		return err
 	}
 
 	return nil
@@ -41,6 +42,7 @@ func (h *HLTV) LoadDemosFromFolder() error {
 
 	err := filepath.Walk(h.Settings.DemoDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
+			log.ErrorLogger.Printf("HLTV (ID: %d, Name: %s) Error accessing file: %v", h.ID, h.Settings.Name, err)
 			return err
 		}
 
@@ -51,11 +53,11 @@ func (h *HLTV) LoadDemosFromFolder() error {
 		if strings.HasSuffix(info.Name(), ".dem") {
 			id++
 			demo, err := parseDemoFilename(h.Settings.DemoName, info.Name())
-			demo.ID = id
 			if err != nil {
-				fmt.Println("Ошибка парсинга файла:", info.Name(), err)
-				return nil
+				log.ErrorLogger.Printf("HLTV (ID: %d, Name: %s) Error parsing file: %s, %v", h.ID, h.Settings.Name, info.Name(), err)
+				return err
 			}
+			demo.ID = id
 			demos = append(demos, demo)
 		}
 
@@ -63,7 +65,8 @@ func (h *HLTV) LoadDemosFromFolder() error {
 	})
 
 	if err != nil {
-		return fmt.Errorf("ошибка обхода папки: %w", err)
+		log.ErrorLogger.Printf("HLTV (ID: %d, Name: %s) Failed to walk through folder: %v", h.ID, h.Settings.Name, err)
+		return err
 	}
 
 	h.Demos = demos
@@ -76,21 +79,25 @@ func (h *HLTV) DeleteOldDemos() error {
 	for _, demo := range h.Demos {
 		demoDate, err := time.Parse("2006.01.02 15:04", demo.Date+" "+demo.Time)
 		if err != nil {
-			return fmt.Errorf("не удалось распарсить дату для демки %s: %w", demo.Name, err)
+			log.ErrorLogger.Printf("HLTV (ID: %d, Name: %s) Failed to parse date for demo %s: %v", h.ID, h.Settings.Name, demo.Name, err)
+			return err
 		}
 
 		maxDemoDay, err := strconv.Atoi(h.Settings.MaxDemoDay)
 		if err != nil {
-			return fmt.Errorf("Ошибка конвертации %s: %w", demo.Name, err)
+			log.ErrorLogger.Printf("HLTV (ID: %d, Name: %s) Error converting MaxDemoDay for demo %s: %v", h.ID, h.Settings.Name, demo.Name, err)
+			return err
 		}
 
 		if now.Sub(demoDate).Hours() > float64(maxDemoDay*24) {
 			demoPath := filepath.Join(h.Settings.DemoDir, demo.Name)
 			err := os.Remove(demoPath)
 			if err != nil {
-				return fmt.Errorf("не удалось удалить демку %s: %w", demo.Name, err)
+				log.ErrorLogger.Printf("HLTV (ID: %d, Name: %s) Failed to remove old demo %s: %v", h.ID, h.Settings.Name, demo.Name, err)
+				return err
 			}
-			fmt.Printf("Удалена старая демка: %s\n", demo.Name)
+			// TODO: debug
+			log.InfoLogger.Printf("HLTV (ID: %d, Name: %s) Removed old demo: %s", h.ID, h.Settings.Name, demo.Name)
 		}
 	}
 

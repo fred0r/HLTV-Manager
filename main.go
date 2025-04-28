@@ -11,28 +11,21 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 )
 
 func main() {
 	err := log.InitLogger("./log/")
 	if err != nil {
-		fmt.Println("Ошибка при инициализации логгера: ", err)
 		return
 	}
 
-	err = config.InitConfig()
-	if err != nil {
-		log.ErrorLogger.Printf("Ошибка при инициализации конфигурации: %v", err)
-		return
-	}
+	config.InitConfig()
 
 	read, err := reader.ReadHLTVRunners()
 	if err != nil {
-		log.ErrorLogger.Printf("Обшика в чтении данных конфига hltv: %v", err)
 		return
 	}
-
-	log.InfoLogger.Println(read)
 
 	var hltvs []*hltv.HLTV
 
@@ -48,13 +41,11 @@ func main() {
 
 		h, err := hltv.NewHLTV(i+1, hltvConfig)
 		if err != nil {
-			log.ErrorLogger.Printf("Ошибка при создании HLTV %d: %v", i, err)
 			continue
 		}
 
 		err = h.Start()
 		if err != nil {
-			log.ErrorLogger.Printf("Ошибка при запуске HLTV %d: %v", i, err)
 			continue
 		}
 
@@ -76,7 +67,9 @@ func main() {
 			hltv.Quit()
 		}
 
-		fmt.Println("Программа завершена.")
+		time.Sleep(2 * time.Second)
+
+		log.InfoLogger.Println("Программа завершена.")
 
 		os.Exit(0)
 	}()
@@ -85,23 +78,24 @@ func main() {
 	log.InfoLogger.Println("Starting site: ", address)
 	err = http.ListenAndServe(address, nil)
 	if err != nil {
-		log.ErrorLogger.Fatal(err)
+		log.ErrorLogger.Println("Server startup error")
+		shutDown <- syscall.SIGTERM
 	}
-
-	// for {
-	// 	in := bufio.NewReader(os.Stdin)
-	// 	line, err := in.ReadString('\n')
-	// 	if err != nil {
-	// 		fmt.Println("ERR")
-	// 		continue
-	// 	}
-
-	// 	err = hltv.WriteCommand(line)
-	// 	if err != nil {
-	// 		fmt.Println("Write to container error:", err)
-	// 		break
-	// 	}
-	// }
 
 	select {}
 }
+
+// for {
+// 	in := bufio.NewReader(os.Stdin)
+// 	line, err := in.ReadString('\n')
+// 	if err != nil {
+// 		fmt.Println("ERR")
+// 		continue
+// 	}
+
+// 	err = hltv.WriteCommand(line)
+// 	if err != nil {
+// 		fmt.Println("Write to container error:", err)
+// 		break
+// 	}
+// }

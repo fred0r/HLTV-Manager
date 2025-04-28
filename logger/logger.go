@@ -36,6 +36,7 @@ func InitLogger(basePath string) error {
 	wrt.logPath = basePath
 	err := os.MkdirAll(wrt.logPath, os.ModePerm)
 	if err != nil {
+		fmt.Println("Error mkdir log dir: ", err)
 		return err
 	}
 	InfoLogger = log.New(wrt, "INFO: ", log.Ltime|log.Lshortfile)

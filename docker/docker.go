@@ -1,8 +1,8 @@
 package docker
 
 import (
+	log "HLTV-Manager/logger"
 	"context"
-	"fmt"
 	"strconv"
 	"time"
 
@@ -19,12 +19,17 @@ type HltvContainerConfig struct {
 	DemoPath string
 	CfgPath  string
 	Mounts   []mount.Mount
-	HltvID   int
+	Hltv     Hltv
 }
 
 type Docker struct {
 	client *client.Client
 	Attach types.HijackedResponse
+}
+
+type Hltv struct {
+	ID   int
+	Name string
 }
 
 func NewDockerClient() (*Docker, error) {
@@ -38,7 +43,7 @@ func NewDockerClient() (*Docker, error) {
 func (docker *Docker) CreateAndStart(config HltvContainerConfig) error {
 	ctx := context.Background()
 
-	err := docker.StopContainerIfExists(config.HltvID)
+	err := docker.StopContainerIfExists(config.Hltv)
 	if err != nil {
 		return err
 	}
@@ -65,8 +70,9 @@ func (docker *Docker) CreateAndStart(config HltvContainerConfig) error {
 			},
 		},
 		AutoRemove: true,
-	}, nil, nil, "hltv_"+strconv.Itoa(config.HltvID))
+	}, nil, nil, "hltv_"+strconv.Itoa(config.Hltv.ID))
 	if err != nil {
+		log.ErrorLogger.Printf("HLTV (ID: %d, Name: %s) Failed to create container: %v", config.Hltv.ID, config.Hltv.Name, err)
 		return err
 	}
 
@@ -78,59 +84,66 @@ func (docker *Docker) CreateAndStart(config HltvContainerConfig) error {
 		Logs:   true,
 	})
 	if err != nil {
+		log.ErrorLogger.Printf("HLTV (ID: %d, Name: %s) Failed to get attach container: %v", config.Hltv.ID, config.Hltv.Name, err)
 		return err
 	}
 
 	err = docker.client.ContainerStart(ctx, resp.ID, container.StartOptions{})
 	if err != nil {
+		log.ErrorLogger.Printf("HLTV (ID: %d, Name: %s) Failed to start container: %v", config.Hltv.ID, config.Hltv.Name, err)
 		return err
 	}
 
 	return nil
 }
 
-func (docker *Docker) StopContainerIfExists(hltvID int) error {
+func (docker *Docker) StopContainerIfExists(hltv Hltv) error {
 	ctx := context.Background()
 
-	containerName := "hltv_" + strconv.Itoa(hltvID)
+	containerName := "hltv_" + strconv.Itoa(hltv.ID)
 	containers, err := docker.client.ContainerList(ctx, container.ListOptions{All: true})
 	if err != nil {
-		return fmt.Errorf("failed to list containers: %w", err)
+		log.ErrorLogger.Printf("HLTV (ID: %d, Name: %s) Failed to list containers for %s: %v", hltv.ID, hltv.Name, containerName, err)
+		return err
 	}
 
-	fmt.Println("Start stop and removed existing container:", containerName)
+	log.InfoLogger.Printf("HLTV (ID: %d, Name: %s) Attempting to stop and remove existing container: %s", hltv.ID, hltv.Name, containerName)
 
 	for _, cont := range containers {
 		if cont.Names[0] == "/"+containerName {
 
 			err := docker.client.ContainerStop(ctx, cont.ID, container.StopOptions{})
 			if err != nil {
-				return fmt.Errorf("failed to stop container: %w", err)
+				log.ErrorLogger.Printf("HLTV (ID: %d, Name: %s) Failed to stop container %s: %v", hltv.ID, hltv.Name, containerName, err)
+				return err
 			}
 
 			tries := 5
+			var removeErr error
 			for i := 0; i < tries; i++ {
 				_, err := docker.client.ContainerInspect(ctx, cont.ID)
 				if err != nil {
 					if client.IsErrNotFound(err) {
-						fmt.Println("Container already removed, skipping remove.")
+						log.InfoLogger.Printf("HLTV (ID: %d, Name: %s) Container already removed.", hltv.ID, hltv.Name)
 						break
 					}
-					return fmt.Errorf("failed to inspect container: %w", err)
+					log.ErrorLogger.Printf("HLTV (ID: %d, Name: %s) Failed to inspect container: %v", hltv.ID, hltv.Name, err)
+					return err
 				}
 
-				err = docker.client.ContainerRemove(ctx, cont.ID, container.RemoveOptions{Force: true})
-				if err == nil {
-					fmt.Println("Removed container:", containerName)
+				removeErr = docker.client.ContainerRemove(ctx, cont.ID, container.RemoveOptions{Force: true})
+				if removeErr == nil {
+					log.InfoLogger.Printf("HLTV (ID: %d, Name: %s) Successfully removed container: %s", hltv.ID, hltv.Name, containerName)
 					break
 				} else {
-					fmt.Printf("Error removing container, retrying in 3 seconds... (Attempt %d/%d)\n", i+1, tries)
+					log.WarningLogger.Printf("HLTV (ID: %d, Name: %s) Error removing container, retrying in 3 seconds... (Attempt %d/%d): %v", hltv.ID, hltv.Name, i+1, tries, err)
 					time.Sleep(3 * time.Second)
 				}
 			}
 
-			if err != nil {
-				return fmt.Errorf("failed to remove container after %d attempts: %w", tries, err)
+			if removeErr != nil {
+				log.ErrorLogger.Printf("HLTV (ID: %d, Name: %s) Failed to remove container after %d attempts: %v", hltv.ID, hltv.Name, tries, removeErr)
+				return err
 			}
 		}
 	}

@@ -17,7 +17,7 @@ type Config struct {
 
 var data Config
 
-func InitConfig() error {
+func InitConfig() {
 	godotenv.Load("config.env")
 
 	data = Config{
@@ -28,9 +28,9 @@ func InitConfig() error {
 		HltvDemosDir:   os.Getenv("HLT_DEMOS_DIR"),
 	}
 
-	log.InfoLogger.Printf("Конфигурация загружена: %v", data)
+	// TODO: Debug
 
-	return nil
+	log.InfoLogger.Printf("The env configuration is loaded: %v", data)
 }
 
 func SiteIP() string {

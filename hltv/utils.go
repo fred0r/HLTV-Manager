@@ -10,44 +10,44 @@ import (
 	"strings"
 )
 
-func createDemosDir(id int) (string, error) {
-	demoPath := filepath.Join(config.HltvDemosDir(), "demos", strconv.Itoa(id), "cstrike")
+func createDemosDir(hltv *HLTV) (string, error) {
+	demoPath := filepath.Join(config.HltvDemosDir(), "demos", strconv.Itoa(hltv.ID), "cstrike")
 
 	err := os.MkdirAll(demoPath, 0755)
 	if err != nil {
-		log.ErrorLogger.Printf("Обшика при создании директории для демок hltv (%d): %v", id, err)
+		log.ErrorLogger.Printf("HLTV (ID: %d, Name: %s) Error when creating a directory for demos: %v", hltv.ID, hltv.Settings.Name, err)
 		return "", err
 	}
 
 	err = os.Chown(demoPath, 1000, 1000)
 	if err != nil {
-		log.ErrorLogger.Printf("Обшика при выдаче прав директории для демок hltv (%d): %v", id, err)
+		log.ErrorLogger.Printf("HLTV (ID: %d, Name: %s) Error chown directory for demo: %v", hltv.ID, hltv.Settings.Name, err)
 		return "", err
 	}
 
 	return demoPath, nil
 }
 
-func createHltvCfg(id int, cvars []string) (string, error) {
-	cfgPath := filepath.Join(config.HltvDemosDir(), "demos", strconv.Itoa(id), "hltv.cfg")
+func createHltvCfg(hltv *HLTV) (string, error) {
+	cfgPath := filepath.Join(config.HltvDemosDir(), "demos", strconv.Itoa(hltv.ID), "hltv.cfg")
 
 	file, err := os.OpenFile(cfgPath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
 	if err != nil {
-		log.ErrorLogger.Printf("Ошибка при открытии hltv.cfg (%d): %v", id, err)
+		log.ErrorLogger.Printf("HLTV (ID: %d, Name: %s) Error when opening hltv.cfg: %v", hltv.ID, hltv.Settings.Name, err)
 		return "", err
 	}
 	defer file.Close()
 
-	fileContent := strings.Join(cvars, "\n") + "\n"
+	fileContent := strings.Join(hltv.Settings.Cvars, "\n") + "\n"
 	_, err = file.Write([]byte(fileContent))
 	if err != nil {
-		log.ErrorLogger.Printf("Ошибка при записи в hltv.cfg (%d): %v", id, err)
+		log.ErrorLogger.Printf("HLTV (ID: %d, Name: %s) Error when writing to hltv.cfg: %v", hltv.ID, hltv.Settings.Name, err)
 		return "", err
 	}
 
 	err = os.Chown(cfgPath, 1000, 1000)
 	if err != nil {
-		log.ErrorLogger.Printf("Ошибка при выдаче прав файлу hltv.cfg (%d): %v", id, err)
+		log.ErrorLogger.Printf("HLTV (ID: %d, Name: %s) Error chown file for hltv.cfg: %v", hltv.ID, hltv.Settings.Name, err)
 		return "", err
 	}
 
@@ -61,14 +61,14 @@ func parseDemoFilename(demoname string, filename string) (Demos, error) {
 
 	parts := strings.SplitN(name, "-", 2)
 	if len(parts) != 2 {
-		return Demos{}, fmt.Errorf("неправильный формат имени файла")
+		return Demos{}, fmt.Errorf("incorrect file name format")
 	}
 
 	datetime := parts[0]
 	mapName := parts[1]
 
 	if len(datetime) < 10 {
-		return Demos{}, fmt.Errorf("неправильный формат даты/времени")
+		return Demos{}, fmt.Errorf("incorrect date/time format")
 	}
 	datePart := datetime[:6]
 	timePart := datetime[6:]
