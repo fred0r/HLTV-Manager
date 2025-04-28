@@ -12,7 +12,7 @@ WORKDIR /home/hltv
 COPY hltv .
 COPY filesystem_stdio.so .
 COPY proxy.so .
-COPY libsteam_api.so .
+COPY libsteam_api.so /usr/lib
 COPY core.so .
 COPY steamclient.so .
 COPY libsteam.so .steam/sdk32/
