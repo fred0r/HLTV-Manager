@@ -6,7 +6,7 @@ networks:
 
 services:
   hltv_manager:
-    image: hltv-manager:v0.1
+    image: ghcr.io/wesstorn/hltv-manager:beta0.1
     container_name: hltv_manager
     networks:
      - hltv_manager_net
