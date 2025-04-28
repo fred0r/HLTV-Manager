@@ -29,11 +29,11 @@ Half-Life TV Manager - Позволяет запускать неогранич�
 
 Скачиваем проект
 
-`-`
+`wget https://github.com/WessTorn/HLTV-Manager/releases/download/v0.0.1/Hltv-Manager.tar.gz`
 
 Распаковываем архив и заходим в него
 
-`unzip hltv-manager`
+`tar -xvzf Hltv-Manager.tar.gz`
 
 `cd hltv-manager`
 
