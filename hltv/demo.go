@@ -17,11 +17,19 @@ func (h *HLTV) DemoControl() error {
 		return err
 	}
 
-	fmt.Println(h.Demos)
-
 	sort.Slice(h.Demos, func(i, j int) bool {
-		dateI, _ := time.Parse("2006.01.02 15:04", h.Demos[i].Date+" "+h.Demos[i].Time)
-		dateJ, _ := time.Parse("2006.01.02 15:04", h.Demos[j].Date+" "+h.Demos[j].Time)
+		dateI, errI := time.Parse("2006.01.02 15:04", h.Demos[i].Date+" "+h.Demos[i].Time)
+		if errI != nil {
+			log.ErrorLogger.Printf("HLTV (ID: %d, Name: %s) Ошибка парсинга для демки: %d %v", h.ID, h.Settings.Name, h.Demos[i].ID, errI)
+			return false
+		}
+
+		dateJ, errJ := time.Parse("2006.01.02 15:04", h.Demos[j].Date+" "+h.Demos[j].Time)
+		if errJ != nil {
+			log.ErrorLogger.Printf("HLTV (ID: %d, Name: %s) Ошибка парсинга для демки: %d %v", h.ID, h.Settings.Name, h.Demos[i].ID, errI)
+			return false
+		}
+
 		return dateI.After(dateJ)
 	})
 

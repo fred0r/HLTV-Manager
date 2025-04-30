@@ -85,6 +85,8 @@ func (hltv *HLTV) Start() error {
 		return err
 	}
 
+	fmt.Println(hltv.Demos)
+
 	return nil
 }
 

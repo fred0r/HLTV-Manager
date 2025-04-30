@@ -78,7 +78,7 @@ func main() {
 	log.InfoLogger.Println("Starting site: ", address)
 	err = http.ListenAndServe(address, nil)
 	if err != nil {
-		log.ErrorLogger.Println("Server startup error")
+		log.ErrorLogger.Println("Server startup error: %v", err)
 		shutDown <- syscall.SIGTERM
 	}
 
