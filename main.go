@@ -34,6 +34,7 @@ func main() {
 			Name:       runner.Name,
 			Connect:    runner.Connect,
 			Port:       runner.Port,
+			GameID:     runner.GameID,
 			DemoName:   runner.DemoName,
 			MaxDemoDay: runner.MaxDemoDay,
 			Cvars:      runner.Cvars,

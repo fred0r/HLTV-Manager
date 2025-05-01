@@ -20,6 +20,7 @@ type Settings struct {
 	Name       string
 	Connect    string
 	Port       string
+	GameID     string
 	DemoDir    string
 	DemoName   string
 	MaxDemoDay string
@@ -62,8 +63,9 @@ func (hltv *HLTV) Start() error {
 	}
 
 	hltvData := docker.Hltv{
-		ID:   hltv.ID,
-		Name: hltv.Settings.Name,
+		ID:     hltv.ID,
+		Name:   hltv.Settings.Name,
+		GameID: hltv.Settings.GameID,
 	}
 
 	err = hltv.Docker.CreateAndStart(docker.HltvContainerConfig{

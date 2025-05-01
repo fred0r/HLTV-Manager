@@ -28,9 +28,24 @@ type Docker struct {
 }
 
 type Hltv struct {
-	ID   int
-	Name string
+	ID     int
+	Name   string
+	GameID string
 }
+
+const (
+	GAME_APPID_CSTRIKE      = 10
+	GAME_APPID_TFC          = 20
+	GAME_APPID_DOD          = 30
+	GAME_APPID_DMC          = 40
+	GAME_APPID_GEARBOX      = 50
+	GAME_APPID_RICOCHET     = 60
+	GAME_APPID_VALVE        = 70
+	GAME_APPID_CZERO        = 80
+	GAME_APPID_CZEROR       = 100
+	GAME_APPID_BSHIFT       = 130
+	GAME_APPID_CSTRIKE_BETA = 150
+)
 
 func NewDockerClient() (*Docker, error) {
 	cli, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
@@ -48,6 +63,14 @@ func (docker *Docker) CreateAndStart(config HltvContainerConfig) error {
 		return err
 	}
 
+	gameID, err := strconv.Atoi(config.Hltv.GameID)
+	if err != nil {
+		log.ErrorLogger.Printf("HLTV (ID: %d, Name: %s) Failed to Atoi game id: %v", config.Hltv.ID, config.Hltv.Name, err)
+		return err
+	}
+
+	path := getGamePath(gameID)
+
 	resp, err := docker.client.ContainerCreate(ctx, &container.Config{
 		Image:        Config.HltvDocker(),
 		Cmd:          config.Cmd,
@@ -61,7 +84,7 @@ func (docker *Docker) CreateAndStart(config HltvContainerConfig) error {
 			{
 				Type:   mount.TypeBind,
 				Source: config.DemoPath,
-				Target: "/home/hltv/cstrike",
+				Target: path,
 			},
 			{
 				Type:   mount.TypeBind,
@@ -149,4 +172,35 @@ func (docker *Docker) StopContainerIfExists(hltv Hltv) error {
 	}
 
 	return nil
+}
+
+func getGamePath(gameID int) string {
+	var gameDir string
+	switch gameID {
+	case GAME_APPID_CSTRIKE:
+		gameDir = "cstrike"
+	case GAME_APPID_TFC:
+		gameDir = "tfc"
+	case GAME_APPID_DOD:
+		gameDir = "dod"
+	case GAME_APPID_DMC:
+		gameDir = "dmc"
+	case GAME_APPID_GEARBOX:
+		gameDir = "gearbox"
+	case GAME_APPID_RICOCHET:
+		gameDir = "ricochet"
+	case GAME_APPID_VALVE:
+		gameDir = "valve"
+	case GAME_APPID_CZERO:
+		gameDir = "czero"
+	case GAME_APPID_CZEROR:
+		gameDir = "czeror"
+	case GAME_APPID_BSHIFT:
+		gameDir = "bshift"
+	case GAME_APPID_CSTRIKE_BETA:
+		gameDir = "cstrike_beta"
+	default:
+		gameDir = "unknown"
+	}
+	return "/home/hltv/" + gameDir
 }
