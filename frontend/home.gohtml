@@ -9,6 +9,7 @@
         <thead>
             <tr class="info text-center">
                 <th class="text-center">ID</th>
+                <th class="text-center">HLTV Name</th>
                 <th class="text-center">Connect Address</th>
                 <th class="text-center">Demos</th>
             </tr>
@@ -17,6 +18,7 @@
             {{range .}}
             <tr class="text-center">
                 <td>{{.ID}}</td>
+                <td>{{.Settings.Name}}</td>
                 <td>{{.Settings.Connect}}</td>
                 <td><a href="/demos/{{.ID}}" class="btn btn-primary btn-sm">View Demos</a></td>
             </tr>
