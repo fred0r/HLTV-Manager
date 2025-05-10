@@ -1,72 +1,72 @@
 # Half-Life TV Manager <img align="right" src="./HLTV-Manager.png" alt="HLTV Launcher" width="210" height="200"/>
 
-Сервис запускается в docekr контейнере.
+The service runs in a docker container.
 
-Сервис запускает hltv сервера в контейнерах.
+Service runs hltv servers in containers.
 
-Сервис позволяет скачивать демки, также автоматически контролирует и удаляет старые демки.
+Service allows to download demos, also automatically monitors and deletes old demos.
 
-## Описание
+## Description
 
-Half-Life TV Manager - Позволяет запускать неограниченное количество hltv серверов. Предоставляет сайт для скачивания демок hltv.
+Half-Life TV Manager - Allows you to run an unlimited number of hltv servers. Provides a site for downloading hltv demos.
 
-## Характеристики
+## Characteristics
 
-- Сервис устанавливается и запускается с помощью docker.
-- Все настраивается через yaml конфигурации. (Временно)
-- Поддержка запуска несколько HLTV серверов.
-- Сайт для скачивания демок.
-- Автоматические удаление демок.
-- Оффлайн демки. (Временно)
+- The service is installed and started using docker.
+- Everything is configured via yaml configuration. (Temporary)
+- Support for running multiple HLTV servers.
+- Site for downloading demos.
+- Automatic deletion of demos.
+- Offline demos. (Temporary)
 
-## Установка
+## Installation
 
 <details>
   <summary>Ubuntu</summary>
 
-- Скачиваем docker-compose 
+- Download docker-compose  
 
     `sudo apt update && sudo apt upgrade`
 
     `sudo apt install docker-compose`
 
-- Скачиваем контейнер HLTV
+- Download the HLTV container
 
     `sudo docker pull ghcr.io/wesstorn/hltv-files:v1.1`
 
-- Загружаем Hltv-Manager и заходим в него
+- Download Hltv-Manager and log into it
 
     `git clone --branch self-hosted https://github.com/WessTorn/HLTV-Manager.git`
 
     `cd HLTV-Manager`
 
-    Настройка docker-compose конфига
+    Configuring the docker-compose config
 
     `nano .env`
 
-    Настраиваем наши HLTV
+    Setting up our HLTVs
 
     `nano hltv-runners.yaml`
 
-- Запускаем сервис
+- Starting the service
 
     `sudo docker-compose up -d`
 
-- Docker команды
+- Docker commands
 
-    `sudo docker-compose up -d` - Запустить в фоне
+    `sudo docker-compose up -d` - Run in the background
 
-    `sudo docker-compose up` - Запустить в текущей сессии (показывает логи)
+    `sudo docker-compose up` - Run in current session (shows logs)
 
-    `sudo docker-compose down` - Остановить сервис
+    `sudo docker-compose down` - Stop service
 
-    `sudo docker-compose logs` - Посмотреть логи
+    `sudo docker-compose logs` - View logs
 </details>
 
 
-## В будущем
+## In the future.
 
-- Конфигурация, настройка, запуск HLTV через сайт.
-- Live терминалы HLTV
-- Поддержка hltv с прямыми трансляциями.
-- Amxx api часть для удаленной работы с hltv сервером.
+- Configuration, setup, launching HLTV through the site.
+- Live HLTV terminals
+- Support hltv with live broadcasts.
+- Amxx api part for remote work with hltv server.
