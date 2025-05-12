@@ -37,13 +37,16 @@ func (hltv *HLTV) TerminalControl() {
 }
 
 var timeoutPattern = regexp.MustCompile(`^WARNING! Server::Challenge: Timeout after \d+ retries$`)
+var rejectedPattern = regexp.MustCompile(`^Connection rejected: No password set.*$`)
 var buildPattern = regexp.MustCompile(`^BUILD \d+ SERVER \(\d+ CRC\)$`)
 var recordPattern = regexp.MustCompile(`^Start recording to [a-zA-Z0-9]+-\d+-[a-zA-Z0-9_]+\.dem.$`)
+var disconnectPattern = regexp.MustCompile(`^Disconnected.*$`)
 
 func (hltv *HLTV) ParseHltvOutLines(input string) {
 	lines := strings.Split(input, "\n")
 	for _, line := range lines {
 		line = strings.ReplaceAll(line, "\r", "")
+		//fmt.Printf("[%s]\n", line)
 		if line == "" {
 			continue
 		}
@@ -64,6 +67,8 @@ func (hltv *HLTV) ParseHltvOutLines(input string) {
 			{
 				if timeoutPattern.MatchString(line) {
 					fmt.Println("HLTV Не может подключиться к серверу:", hltv.Settings.Connect)
+				} else if rejectedPattern.MatchString(line) {
+					fmt.Println("HLTV Не может подключиться к серверу из-за пароля:", hltv.Settings.Connect)
 				} else if buildPattern.MatchString(line) {
 					fmt.Println("HLTV Подключился к серверу:", hltv.Settings.Connect)
 					hltv.Parser.Status = HLTV_RECORD
@@ -76,6 +81,17 @@ func (hltv *HLTV) ParseHltvOutLines(input string) {
 					fmt.Println("Началась запись демки:", line)
 					hltv.Parser.Status = HLTV_GOOD
 					hltv.DemoControl()
+				}
+				continue
+			}
+		case HLTV_GOOD:
+			{
+				if buildPattern.MatchString(line) {
+					hltv.Parser.Status = HLTV_RECORD
+					fmt.Println("HLTV ПЕРЕПОДКЛЮЧАЕТСЯ")
+				} else if disconnectPattern.MatchString(line) {
+					hltv.Parser.Status = HLTV_CONNECT
+					fmt.Println("HLTV Кикнули?")
 				}
 				continue
 			}
