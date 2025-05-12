@@ -4,7 +4,6 @@ import (
 	"HLTV-Manager/docker"
 	log "HLTV-Manager/logger"
 	"fmt"
-	"strings"
 )
 
 const maxLogLines = 100
@@ -14,6 +13,7 @@ type HLTV struct {
 	Settings Settings
 	Demos    []Demos
 	Docker   *docker.Docker
+	Parser   *Parser
 }
 
 type Settings struct {
@@ -82,10 +82,7 @@ func (hltv *HLTV) Start() error {
 		return err
 	}
 
-	err = hltv.DemoControl()
-	if err != nil {
-		return err
-	}
+	go hltv.TerminalControl()
 
 	fmt.Println(hltv.Demos)
 
@@ -106,19 +103,6 @@ func (hltv *HLTV) Quit() error {
 	hltv.Docker.Attach.Close()
 
 	return nil
-}
-
-func (hltv *HLTV) ShowTerminal() {
-	buf := make([]byte, 1024)
-	for {
-		n, err := hltv.Docker.Attach.Reader.Read(buf)
-		if err != nil {
-			break
-		}
-		line := string(buf[:n])
-		line = strings.TrimRight(line, "\n")
-		fmt.Println(line)
-	}
 }
 
 func (hltv *HLTV) WriteCommand(cmd string) error {

@@ -51,8 +51,6 @@ func main() {
 		}
 
 		hltvs = append(hltvs, h)
-
-		go h.ShowTerminal()
 	}
 
 	site := &site.Site{HLTV: hltvs}
