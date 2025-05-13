@@ -1,6 +1,7 @@
 package hltv
 
 import (
+	log "HLTV-Manager/logger"
 	"fmt"
 	"regexp"
 	"strings"
@@ -46,7 +47,6 @@ func (hltv *HLTV) ParseHltvOutLines(input string) {
 	lines := strings.Split(input, "\n")
 	for _, line := range lines {
 		line = strings.ReplaceAll(line, "\r", "")
-		//fmt.Printf("[%s]\n", line)
 		if line == "" {
 			continue
 		}
@@ -60,17 +60,17 @@ func (hltv *HLTV) ParseHltvOutLines(input string) {
 
 			if hltv.allModulesInitialized() {
 				hltv.Parser.Status = HLTV_CONNECT
-				fmt.Println("ОК! Все модули инициализированы.")
+				log.InfoLogger.Printf("HLTV (ID: %d, Name: %s) All modules are initialized.", hltv.ID, hltv.Settings.Name)
 			}
 			continue
 		case HLTV_CONNECT, HLTV_FAIL_CONNECT:
 			{
 				if timeoutPattern.MatchString(line) {
-					fmt.Println("HLTV Не может подключиться к серверу:", hltv.Settings.Connect)
+					log.WarningLogger.Printf("HLTV (ID: %d, Name: %s) Cannot connect to server: %s", hltv.ID, hltv.Settings.Name, hltv.Settings.Connect)
 				} else if rejectedPattern.MatchString(line) {
-					fmt.Println("HLTV Не может подключиться к серверу из-за пароля:", hltv.Settings.Connect)
+					log.WarningLogger.Printf("HLTV (ID: %d, Name: %s) Cannot connect to server due to password: %s", hltv.ID, hltv.Settings.Name, hltv.Settings.Connect)
 				} else if buildPattern.MatchString(line) {
-					fmt.Println("HLTV Подключился к серверу:", hltv.Settings.Connect)
+					log.InfoLogger.Printf("HLTV (ID: %d, Name: %s) Connected to the server: %s", hltv.ID, hltv.Settings.Name, hltv.Settings.Connect)
 					hltv.Parser.Status = HLTV_RECORD
 				}
 				continue
@@ -78,6 +78,7 @@ func (hltv *HLTV) ParseHltvOutLines(input string) {
 		case HLTV_RECORD:
 			{
 				if recordPattern.MatchString(line) {
+					log.InfoLogger.Printf("HLTV (ID: %d, Name: %s) Start recorded demo.", hltv.ID, hltv.Settings.Name)
 					fmt.Println("Началась запись демки:", line)
 					hltv.Parser.Status = HLTV_GOOD
 					hltv.DemoControl()
@@ -88,10 +89,10 @@ func (hltv *HLTV) ParseHltvOutLines(input string) {
 			{
 				if buildPattern.MatchString(line) {
 					hltv.Parser.Status = HLTV_RECORD
-					fmt.Println("HLTV ПЕРЕПОДКЛЮЧАЕТСЯ")
+					log.InfoLogger.Printf("HLTV (ID: %d, Name: %s) Reconnect.", hltv.ID, hltv.Settings.Name)
 				} else if disconnectPattern.MatchString(line) {
 					hltv.Parser.Status = HLTV_CONNECT
-					fmt.Println("HLTV Кикнули?")
+					log.InfoLogger.Printf("HLTV (ID: %d, Name: %s) Disconnected to server: %s", hltv.ID, hltv.Settings.Name, hltv.Settings.Connect)
 				}
 				continue
 			}
