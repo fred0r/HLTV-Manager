@@ -23,9 +23,30 @@ type Parser struct {
 	initModules map[string]bool
 }
 
+var patterns = map[string]*regexp.Regexp{
+	"timeout":      regexp.MustCompile(`^WARNING! Server::Challenge: Timeout after \d+ retries$`),
+	"build":        regexp.MustCompile(`^BUILD \d+ SERVER \(\d+ CRC\)$`),
+	"recording":    regexp.MustCompile(`^Start recording to [a-zA-Z0-9]+-\d+-[a-zA-Z0-9_]+\.dem$`),
+	"rejected":     regexp.MustCompile(`^Connection rejected: No password set.*$`),
+	"disconnected": regexp.MustCompile(`^Disconnected.*$`),
+}
+
 func (hltv *HLTV) TerminalControl() {
+	hltv.Parser.Status = HLTV_CHECK_INIT
+	hltv.Parser.initModules = map[string]bool{
+		"Console initialized.":       false,
+		"FileSystem initialized.":    false,
+		"Network initialized.":       false,
+		"Master module initialized.": false,
+		"Server module initialized.": false,
+		"World module initialized.":  false,
+		"Demo client initialized.":   false,
+		"Executing file hltv.cfg.":   false,
+		"Proxy module initialized.":  false,
+		"Recording initialized.":     false,
+	}
+
 	buf := make([]byte, 1024)
-	hltv.Parser = newParser()
 	for {
 		n, err := hltv.Docker.Attach.Reader.Read(buf)
 		if err != nil {
@@ -36,12 +57,6 @@ func (hltv *HLTV) TerminalControl() {
 		hltv.ParseHltvOutLines(line)
 	}
 }
-
-var timeoutPattern = regexp.MustCompile(`^WARNING! Server::Challenge: Timeout after \d+ retries$`)
-var rejectedPattern = regexp.MustCompile(`^Connection rejected: No password set.*$`)
-var buildPattern = regexp.MustCompile(`^BUILD \d+ SERVER \(\d+ CRC\)$`)
-var recordPattern = regexp.MustCompile(`^Start recording to [a-zA-Z0-9]+-\d+-[a-zA-Z0-9_]+\.dem.$`)
-var disconnectPattern = regexp.MustCompile(`^Disconnected.*$`)
 
 func (hltv *HLTV) ParseHltvOutLines(input string) {
 	lines := strings.Split(input, "\n")
@@ -65,11 +80,12 @@ func (hltv *HLTV) ParseHltvOutLines(input string) {
 			continue
 		case HLTV_CONNECT, HLTV_FAIL_CONNECT:
 			{
-				if timeoutPattern.MatchString(line) {
+				switch {
+				case patterns["timeout"].MatchString(line):
 					log.WarningLogger.Printf("HLTV (ID: %d, Name: %s) Cannot connect to server: %s", hltv.ID, hltv.Settings.Name, hltv.Settings.Connect)
-				} else if rejectedPattern.MatchString(line) {
+				case patterns["rejected"].MatchString(line):
 					log.WarningLogger.Printf("HLTV (ID: %d, Name: %s) Cannot connect to server due to password: %s", hltv.ID, hltv.Settings.Name, hltv.Settings.Connect)
-				} else if buildPattern.MatchString(line) {
+				case patterns["build"].MatchString(line):
 					log.InfoLogger.Printf("HLTV (ID: %d, Name: %s) Connected to the server: %s", hltv.ID, hltv.Settings.Name, hltv.Settings.Connect)
 					hltv.Parser.Status = HLTV_RECORD
 				}
@@ -77,7 +93,7 @@ func (hltv *HLTV) ParseHltvOutLines(input string) {
 			}
 		case HLTV_RECORD:
 			{
-				if recordPattern.MatchString(line) {
+				if patterns["recording"].MatchString(line) {
 					log.InfoLogger.Printf("HLTV (ID: %d, Name: %s) Start recorded demo.", hltv.ID, hltv.Settings.Name)
 					fmt.Println("Началась запись демки:", line)
 					hltv.Parser.Status = HLTV_GOOD
@@ -87,12 +103,13 @@ func (hltv *HLTV) ParseHltvOutLines(input string) {
 			}
 		case HLTV_GOOD:
 			{
-				if buildPattern.MatchString(line) {
+				switch {
+				case patterns["build"].MatchString(line):
 					hltv.Parser.Status = HLTV_RECORD
 					log.InfoLogger.Printf("HLTV (ID: %d, Name: %s) Reconnect.", hltv.ID, hltv.Settings.Name)
-				} else if disconnectPattern.MatchString(line) {
+				case patterns["disconnected"].MatchString(line):
 					hltv.Parser.Status = HLTV_CONNECT
-					log.InfoLogger.Printf("HLTV (ID: %d, Name: %s) Disconnected to server: %s", hltv.ID, hltv.Settings.Name, hltv.Settings.Connect)
+					log.InfoLogger.Printf("HLTV (ID: %d, Name: %s) Disconnected from server: %s", hltv.ID, hltv.Settings.Name, hltv.Settings.Connect)
 				}
 				continue
 			}
@@ -109,22 +126,4 @@ func (hltv *HLTV) allModulesInitialized() bool {
 		}
 	}
 	return true
-}
-
-func newParser() *Parser {
-	return &Parser{
-		Status: HLTV_CHECK_INIT,
-		initModules: map[string]bool{
-			"Console initialized.":       false,
-			"FileSystem initialized.":    false,
-			"Network initialized.":       false,
-			"Master module initialized.": false,
-			"Server module initialized.": false,
-			"World module initialized.":  false,
-			"Demo client initialized.":   false,
-			"Executing file hltv.cfg.":   false,
-			"Proxy module initialized.":  false,
-			"Recording initialized.":     false,
-		},
-	}
 }
