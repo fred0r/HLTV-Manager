@@ -30,12 +30,6 @@ func (site *Site) demosHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = hltv.DemoControl()
-	if err != nil {
-		http.Error(w, "Demos error: "+err.Error(), http.StatusNotFound)
-		return
-	}
-
 	tmpl, err := template.ParseFiles(
 		filepath.Join("frontend", "head.gohtml"),
 		filepath.Join("frontend", "demos.gohtml"),
