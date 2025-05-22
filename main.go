@@ -31,13 +31,15 @@ func main() {
 
 	for i, runner := range read {
 		hltvConfig := hltv.Settings{
-			Name:       runner.Name,
-			Connect:    runner.Connect,
-			Port:       runner.Port,
-			GameID:     runner.GameID,
-			DemoName:   runner.DemoName,
-			MaxDemoDay: runner.MaxDemoDay,
-			Cvars:      runner.Cvars,
+			Name:             runner.Name,
+			ShowIP:           runner.ShowIP,
+			Connect:          runner.Connect,
+			Port:             runner.Port,
+			GameID:           runner.GameID,
+			DemoName:         runner.DemoName,
+			MaxDemoDay:       runner.MaxDemoDay,
+			DebugTerminalLog: runner.DebugTerminalLog,
+			Cvars:            runner.Cvars,
 		}
 
 		h, err := hltv.NewHLTV(i+1, hltvConfig)

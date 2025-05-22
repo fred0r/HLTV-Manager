@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 )
@@ -54,27 +55,29 @@ func createHltvCfg(hltv *HLTV) (string, error) {
 	return cfgPath, nil
 }
 
-func parseDemoFilename(demoname string, filename string) (Demos, error) {
-	name := strings.TrimSuffix(filename, ".dem")
+func parseDemoFilename(filename string) (Demos, error) {
+	re := regexp.MustCompile(`^[^-]+-(\d{10})-(.+)\.dem$`)
 
-	name = strings.TrimPrefix(name, fmt.Sprintf("%s-", demoname))
-
-	parts := strings.SplitN(name, "-", 2)
-	if len(parts) != 2 {
+	matches := re.FindStringSubmatch(filename)
+	if matches == nil || len(matches) != 3 {
 		return Demos{}, fmt.Errorf("incorrect file name format")
 	}
 
-	datetime := parts[0]
-	mapName := parts[1]
+	datetime := matches[1] // например: "2504281730"
+	mapName := matches[2]  // например: "de_aztec"
 
-	if len(datetime) < 10 {
-		return Demos{}, fmt.Errorf("incorrect date/time format")
+	if _, err := strconv.Atoi(datetime); err != nil {
+		return Demos{}, fmt.Errorf("invalid datetime format: not numeric")
 	}
-	datePart := datetime[:6]
-	timePart := datetime[6:]
 
-	date := fmt.Sprintf("20%s.%s.%s", datePart[:2], datePart[2:4], datePart[4:6])
-	time := fmt.Sprintf("%s:%s", timePart[:2], timePart[2:4])
+	yy := datetime[:2]
+	mm := datetime[2:4]
+	dd := datetime[4:6]
+	hh := datetime[6:8]
+	min := datetime[8:10]
+
+	date := fmt.Sprintf("20%s.%s.%s", yy, mm, dd)
+	time := fmt.Sprintf("%s:%s", hh, min)
 
 	return Demos{
 		Name: filename,

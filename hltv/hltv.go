@@ -6,25 +6,25 @@ import (
 	"fmt"
 )
 
-const maxLogLines = 100
-
 type HLTV struct {
 	ID       int
 	Settings Settings
 	Demos    []Demos
 	Docker   *docker.Docker
-	Parser   *Parser
+	Parser   Parser
 }
 
 type Settings struct {
-	Name       string
-	Connect    string
-	Port       string
-	GameID     string
-	DemoDir    string
-	DemoName   string
-	MaxDemoDay string
-	Cvars      []string
+	Name             string
+	ShowIP           string
+	Connect          string
+	Port             string
+	GameID           string
+	DemoDir          string
+	DemoName         string
+	MaxDemoDay       string
+	DebugTerminalLog bool
+	Cvars            []string
 }
 
 type Demos struct {
