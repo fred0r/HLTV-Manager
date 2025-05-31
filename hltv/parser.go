@@ -26,7 +26,7 @@ type Parser struct {
 var patterns = map[string]*regexp.Regexp{
 	"timeout":      regexp.MustCompile(`^WARNING! Server::Challenge: Timeout after \d+ retries$`),
 	"build":        regexp.MustCompile(`^BUILD \d+ SERVER \(\d+ CRC\)$`),
-	"recording":    regexp.MustCompile(`^Start recording to [a-zA-Z0-9]+-\d+-[a-zA-Z0-9_]+\.dem$`),
+	"recording":    regexp.MustCompile(`^Start recording to [a-zA-Z0-9]+-\d+-[a-zA-Z0-9_]+\.dem.$`),
 	"rejected":     regexp.MustCompile(`^Connection rejected: No password set.*$`),
 	"disconnected": regexp.MustCompile(`^Disconnected.*$`),
 }
@@ -65,6 +65,11 @@ func (hltv *HLTV) ParseHltvOutLines(input string) {
 		if line == "" {
 			continue
 		}
+
+		if hltv.Settings.DebugTerminalLog {
+			log.InfoLogger.Printf("(HLTV %d) %s", hltv.ID, line)
+		}
+
 		switch hltv.Parser.Status {
 		case HLTV_CHECK_INIT:
 			if initialized, exists := hltv.Parser.initModules[line]; exists {
@@ -115,7 +120,7 @@ func (hltv *HLTV) ParseHltvOutLines(input string) {
 			}
 		}
 
-		fmt.Printf("[%s]\n", line)
+		// fmt.Printf("[%s]\n", line)
 	}
 }
 

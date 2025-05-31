@@ -60,7 +60,7 @@ func (h *HLTV) LoadDemosFromFolder() error {
 
 		if strings.HasSuffix(info.Name(), ".dem") {
 			id++
-			demo, err := parseDemoFilename(h.Settings.DemoName, info.Name())
+			demo, err := parseDemoFilename(info.Name())
 			if err != nil {
 				log.WarningLogger.Printf("HLTV (ID: %d, Name: %s) Error parsing file: %s, %v", h.ID, h.Settings.Name, info.Name(), err)
 				return nil
